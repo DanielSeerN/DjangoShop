@@ -1,5 +1,13 @@
 {%extends 'app/index.html'%}
+{% load specification %}
 {%block content%}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb justify-content-md-center">
+        <li class="breadcrumb-item"><a href="{%url 'main' %}">Главная</a></li>
+        <li class="breadcrumb-item"><a href="#">{{product.category.title}}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{product.title}}</li>
+    </ol>
+</nav>
 <div class="row">
     <div class="col-md-4">
         <img src="{{product.image.url}}" class="img-fluid">
@@ -9,6 +17,11 @@
         <h3>{{product.title}}</h3>
         <p>Цена: {{product.price}} ₽</p>
         <p>Описание: {{product.description}}</p>
+        {{product | product_specification}}
+        {%if product.category.slug == 'photocamera'%}
+            {%include 'app/Camera_specification.html'%}
+        {%endif%}
+
     </div>
 </div>
 {%endblock content%}
