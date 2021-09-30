@@ -19,7 +19,32 @@ PRODUCT_SPECIFICATION = {
         'Модель': 'version',
         'Тип матрицы': 'type_of_matrix',
         'Мегапиксели': 'megapixels'
-
+    },
+    'tv': {
+        'Диагональ': 'diagonal',
+        'Разрешение': 'resolution',
+        'Яркость': 'brightness'
+    },
+    'washingmachine': {
+        'Версия': 'version',
+        'Тип': 'type_of_machine',
+        'Вес': 'weight'
+    },
+    'conditioner': {
+        'Версия': 'version',
+        'Тип': 'type_of_conditioner',
+        'Вес': 'weight',
+        'Фильтры': 'filters'
+    },
+    'videogameconsole': {
+        'Поддержка 4к': 'four_k_support',
+        'Объём SSD': 'SSD',
+        'Гарантия': 'warranty'
+    },
+    'lawnmover': {
+        'Режущая система': 'cutting_system',
+        'Момент вращения': 'rotational_moment',
+        'Мощность двигателя': 'engine_capacity'
     }
 }
 

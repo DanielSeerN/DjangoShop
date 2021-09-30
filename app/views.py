@@ -15,7 +15,7 @@ from .models import LatestProducts, Customer
 class MainView(View):
     def get(self, request, *args, **kwargs):
         products = LatestProducts.objects.get_mainpage_products('photocamera', 'smartphone',
-                                                                'conditioner')
+                                                                'conditioner', 'lawnmover', 'videogameconsole', 'tv')
 
         context = {
             'products': products,
@@ -47,16 +47,16 @@ class ProductDetail(DetailView):
 
 class AddToCartView(View):
     def get(self, request, *args, **kwargs):
-        ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
+        # ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
         return HttpResponseRedirect('/cart/')
 
 
 class CartView(View):
     def get(self, request, *args, **kwargs):
-        customer = Customer.objects.get(user=request.user)
-        cart = Cart.objects.get(owner=customer)
-
-        context = {
-             'cart': cart
-        }
-        return render(request, 'app/cart.html', context)
+        # customer = Customer.objects.get(user=request.user)
+        # cart = Cart.objects.get(owner=customer)
+        #
+        # context = {
+        #      'cart': cart
+        # }
+        return render(request, 'app/cart.html')
