@@ -34,4 +34,4 @@ def get_content(product, model_name):
 @register.filter
 def product_specification(product):
     model_name = product.__class__._meta.model_name
-    return (TABLE_HEAD + get_content(product, model_name) + TABLE_END)
+    return mark_safe(TABLE_HEAD + get_content(product, model_name) + TABLE_END)

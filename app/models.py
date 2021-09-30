@@ -15,15 +15,16 @@ def get_url_for_product(object, viewname):
 class LatestProductsManager:
     @staticmethod
     def get_mainpage_products(*args, **kwargs):
-        main_model = kwargs.get('main_model')
+
         products = []
         ct_models = ContentType.objects.filter(model__in=args)
         for ct_model in ct_models:
-            model_products = ct_model.model_class().objects.all().order_by('-id')[:5]
+            model_products = ct_model.model_class()._base_manager.all().order_by('-id')[:5]
             products.extend(model_products)
         return products
-        if main_model:
-            pass
+
+
+
 
 
 class LatestProducts:
