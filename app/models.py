@@ -15,16 +15,17 @@ def get_url_for_product(object, viewname):
 class LatestProductsManager:
     @staticmethod
     def get_mainpage_products(*args, **kwargs):
-
+        priority_models = kwargs.get('priority_models')
         products = []
         ct_models = ContentType.objects.filter(model__in=args)
         for ct_model in ct_models:
             model_products = ct_model.model_class()._base_manager.all().order_by('-id')[:5]
             products.extend(model_products)
+        if priority_models:
+            ct_models = ContentType.objects.filter(model=priority_models)
+            if ct_model.exists():
+                pass
         return products
-
-
-
 
 
 class LatestProducts:
@@ -136,13 +137,16 @@ class CartProduct(models.Model):
 
 
 class Cart(models.Model):
-    owner = models.ForeignKey('Customer', verbose_name='Покупатель', on_delete=models.CASCADE)
+    owner = models.ForeignKey('Customer', verbose_name='Покупатель', on_delete=models.CASCADE, null=True)
     products = models.ManyToManyField(CartProduct, blank=True, related_name='related_cart')
     total_products = models.PositiveIntegerField(default=0)
-    final_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Финальная цена')
+    final_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Финальная цена', null=True)
+    in_order = models.BooleanField(default=False)
+    for_anonym_user = models.BooleanField(default=False)
 
-    def __str__(self):
-        return str(self.id)
+
+def __str__(self):
+    return str(self.id)
 
 
 class Customer(models.Model):

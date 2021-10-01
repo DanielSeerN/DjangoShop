@@ -10,12 +10,13 @@ from .models import VideoGameConsole
 from .models import TV
 from .models import PhotoCamera
 from .models import LatestProducts, Customer
+from .mixins import CartMixin
 
 
-class MainView(View):
+class MainView(CartMixin,View):
     def get(self, request, *args, **kwargs):
         products = LatestProducts.objects.get_mainpage_products('photocamera', 'smartphone',
-                                                                'conditioner', 'lawnmover', 'videogameconsole', 'tv')
+                                                                'conditioner', 'lawnmover', 'videogameconsole', 'tv', )
 
         context = {
             'products': products,
@@ -23,7 +24,7 @@ class MainView(View):
         return render(request, 'app/index.html', context)
 
 
-class ProductDetail(DetailView):
+class ProductDetail(CartMixin,DetailView):
     CT_MODELS = {
         'smartphone': SmartPhone,
         'washing_machine': WashingMachine,
@@ -45,18 +46,16 @@ class ProductDetail(DetailView):
     slug_url_kwarg = 'slug'
 
 
-class AddToCartView(View):
+class AddToCartView(CartMixin,View):
     def get(self, request, *args, **kwargs):
         # ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
         return HttpResponseRedirect('/cart/')
 
 
-class CartView(View):
+class CartView(CartMixin, View):
     def get(self, request, *args, **kwargs):
-        # customer = Customer.objects.get(user=request.user)
-        # cart = Cart.objects.get(owner=customer)
-        #
-        # context = {
-        #      'cart': cart
-        # }
-        return render(request, 'app/cart.html')
+
+        context = {
+             'cart': self.cart
+        }
+        return render(request, 'app/cart.html', context)
