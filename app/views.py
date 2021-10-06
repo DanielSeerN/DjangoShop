@@ -1,22 +1,15 @@
+from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic import DetailView, View
 
-from .models import SmartPhone, Cart
-from .models import WashingMachine
-from .models import LawnMover
-from .models import Conditioner
-from .models import VideoGameConsole
-from .models import TV
-from .models import PhotoCamera
-from .models import LatestProducts, Customer
+from .models import SmartPhone, Cart, CartProduct, WashingMachine, LawnMover, Conditioner, VideoGameConsole, TV, PhotoCamera, LatestProducts, Customer
 from .mixins import CartMixin
 
 
-class MainView(CartMixin,View):
+class MainView(View):
     def get(self, request, *args, **kwargs):
-        products = LatestProducts.objects.get_mainpage_products('photocamera', 'smartphone',
-                                                                'conditioner', 'lawnmover', 'videogameconsole', 'tv', )
+        products = LatestProducts.objects.get_mainpage_products('smartphone', 'washing_machine', 'lawnmover', 'conditioner', 'videogameconsole', 'tv', 'photocamera')
 
         context = {
             'products': products,
@@ -48,7 +41,11 @@ class ProductDetail(CartMixin,DetailView):
 
 class AddToCartView(CartMixin,View):
     def get(self, request, *args, **kwargs):
-        # ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
+        ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
+        content_type = ContentType.objects.get(model=ct_model)
+        product = content_type.model_class().objects.get(slug=product_slug)
+        cart_product = CartProduct.objects.get_or_create(user=self.cart.owner, cart=self.cart, content_type=content_type, object_id=product.id, final_price=0)
+        self.cart.products.add(cart_product)
         return HttpResponseRedirect('/cart/')
 
 

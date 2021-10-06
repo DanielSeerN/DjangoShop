@@ -76,7 +76,7 @@
                                     </div>
                                 </div>
                                 <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                    <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{%url 'add_to_cart' slug=p.slug%}">Добавить в корзину</a></div>
+                                    <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{% url 'add_to_cart' ct_model=p.get_ct_model_name slug=p.slug%}">Добавить в корзину</a></div>
                                 </div>
                             </div>
                         </div>

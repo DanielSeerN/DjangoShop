@@ -45,7 +45,14 @@ PRODUCT_SPECIFICATION = {
         'Режущая система': 'cutting_system',
         'Момент вращения': 'rotational_moment',
         'Мощность двигателя': 'engine_capacity'
+    },
+    'smartphone': {
+        'Операционная система': 'os',
+        'Диагональ': 'diagonal',
+        'Процессор': 'processor',
+        'Оперативная память': 'ram'
     }
+
 }
 
 

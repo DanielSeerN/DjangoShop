@@ -17,15 +17,20 @@ class LatestProductsManager:
     def get_mainpage_products(*args, **kwargs):
         priority_models = kwargs.get('priority_models')
         products = []
-        ct_models = ContentType.objects.filter(model__in=args)
-        for ct_model in ct_models:
-            model_products = ct_model.model_class()._base_manager.all().order_by('-id')[:5]
-            products.extend(model_products)
+        main_products = []
         if priority_models:
             ct_models = ContentType.objects.filter(model=priority_models)
-            if ct_model.exists():
-                pass
-        return products
+            if ct_models.exists():
+                for ct_model in ct_models:
+                    needed_products = ct_model.model_class()._base_manager.all().order_by('id')[:5]
+                    main_products.extend(needed_products)
+                return main_products
+        else:
+            ct_models = ContentType.objects.filter(model__in=args)
+            for ct_model in ct_models:
+                model_products = ct_model.model_class()._base_manager.all().order_by('-id')[:5]
+                products.extend(model_products)
+            return products
 
 
 class LatestProducts:
@@ -54,6 +59,9 @@ class Product(models.Model):
     image = models.ImageField(verbose_name='Изображение')
     description = models.TextField(verbose_name='Описание', null=True)
 
+    def get_ct_model_name(self):
+        return self.__class__.__name__.lower()
+
     def __str__(self):
         return self.title
 
@@ -67,6 +75,9 @@ class SmartPhone(Product):
     def get_absolute_url(self):
         return get_url_for_product(self, 'product')
 
+    class Meta:
+        verbose_name_plural = 'Smartphones'
+
 
 class TV(Product):
     diagonal = models.CharField(max_length=30, verbose_name='Диагональ')
@@ -76,6 +87,9 @@ class TV(Product):
     def get_absolute_url(self):
         return get_url_for_product(self, 'product')
 
+    class Meta:
+        verbose_name_plural = 'TVs'
+
 
 class WashingMachine(Product):
     version = models.CharField(max_length=30, verbose_name='Модель')
@@ -84,6 +98,9 @@ class WashingMachine(Product):
 
     def get_absolute_url(self):
         return get_url_for_product(self, 'product')
+
+    class Meta:
+        verbose_name_plural = 'Washing machines'
 
 
 class Conditioner(Product):
@@ -95,6 +112,9 @@ class Conditioner(Product):
     def get_absolute_url(self):
         return get_url_for_product(self, 'product')
 
+    class Meta:
+        verbose_name_plural = 'Conditioners'
+
 
 class PhotoCamera(Product):
     version = models.CharField(max_length=30, verbose_name='Модель')
@@ -103,6 +123,9 @@ class PhotoCamera(Product):
 
     def get_absolute_url(self):
         return get_url_for_product(self, 'product')
+
+    class Meta:
+        verbose_name_plural = 'Photocameras'
 
 
 class VideoGameConsole(Product):
@@ -113,6 +136,9 @@ class VideoGameConsole(Product):
     def get_absolute_url(self):
         return get_url_for_product(self, 'product')
 
+    class Meta:
+        verbose_name_plural = 'Videogame consoles'
+
 
 class LawnMover(Product):
     cutting_system = models.CharField(max_length=30, verbose_name='Режущая система')
@@ -121,6 +147,9 @@ class LawnMover(Product):
 
     def get_absolute_url(self):
         return get_url_for_product(self, 'product')
+
+    class Meta:
+        verbose_name_plural = 'Lawnmovers'
 
 
 class CartProduct(models.Model):
@@ -133,7 +162,7 @@ class CartProduct(models.Model):
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self):
-        return self.title
+        return str(self.id)
 
 
 class Cart(models.Model):
@@ -143,10 +172,9 @@ class Cart(models.Model):
     final_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Финальная цена', null=True)
     in_order = models.BooleanField(default=False)
     for_anonym_user = models.BooleanField(default=False)
-
-
-def __str__(self):
-    return str(self.id)
+    #
+    # def __str__(self):
+    #     return str(self.id)
 
 
 class Customer(models.Model):

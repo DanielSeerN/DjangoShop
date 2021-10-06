@@ -6,11 +6,10 @@ from .models import SmartPhone, Cart, Customer, WashingMachine, LawnMover, Condi
 class CartMixin(View):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            customer = Customer.objects.filter(user=request.user)
+            customer = Customer.objects.filter(user=request.user).first()
             if not customer:
                 customer = Customer.objects.create(user=request.user)
-            # cart = Cart.objects.filter(owner=customer, in_order=False).last()
-            cart = 0
+            cart = Cart.objects.filter(owner=customer, in_order=False).first()
             if not cart:
                 cart = Cart.objects.create(owner=customer)
         else:
