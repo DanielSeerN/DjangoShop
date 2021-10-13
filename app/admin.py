@@ -53,7 +53,7 @@ class VideoGameConsoleAdmin(admin.ModelAdmin):
 
 
 models_ = [Category, SmartPhone, PhotoCamera, TV, LawnMover, WashingMachine, Conditioner, VideoGameConsole, CartProduct,
-           Cart, Customer]
+           Cart, Customer, Order]
 for model in models_:
     if model == SmartPhone:
         admin.site.register(model, SmartphoneAdmin)

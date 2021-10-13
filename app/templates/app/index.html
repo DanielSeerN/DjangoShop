@@ -48,7 +48,18 @@
             </div>
         </nav>
         <!-- Header-->
+ {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                <strong>{{ message }}</strong>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Сlose">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+            {% endfor %}
+     {% endif %}
         {%block content%}
+
         <header class="bg-dark py-5" >
             <div class="container px-4 px-lg-5 my-5">
                 <div class="text-center text-white">
@@ -59,31 +70,32 @@
         </header>
         <!-- Section-->
         <section class="py-5">
-
                 <div class="container ">
                     <div class="row">
-                         {%for p in products%}
-                        <div class="col-lg-4 col-md-6 mb-4">
+                        {%for product in products%}
+                        <div class="col-lg-4 col-md-6 mb-6">
                             <div class="card h-100">
                                 <!-- Product image-->
-                                <a href="{{p.get_absolute_url}}"><img class="card-img-top" src="{{p.image.url}}" alt="Товар" /></a>
-
+                                <a href="{{product.get_absolute_url}}"><img class="card-img-top" src="{{product.image.url}}" alt="Товар" /></a>
                                 <div class="card-body p-4">
                                     <div class="text-center">
                                         <!-- Product name-->
-                                        <a href="{{p.get_absolute_url}}"><h5 class="fw-bolder">{{p.title}}</h5></a>
+                                        <a href="{{product.get_absolute_url}}"><h5 class="fw-bolder">{{product.title}}</h5></a>
                                         {{product.price}}
                                     </div>
                                 </div>
                                 <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                    <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{% url 'add_to_cart' ct_model=p.get_ct_model_name slug=p.slug%}">Добавить в корзину</a></div>
+                                    <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{% url 'add_to_cart' ct_model=product.get_ct_model_name slug=product.slug%}">Добавить в корзину</a></div>
                                 </div>
                             </div>
+
                         </div>
+                        {%endfor%}
                     </div>
                 </div>
-                         {%endfor%}
+
         </section>
+
          {%endblock content%}
         <!-- Footer-->
         <footer class="py-5 bg-dark">

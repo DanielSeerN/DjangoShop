@@ -8,20 +8,41 @@
       <th scope="col">Наименованование</th>
       <th scope="col">Изображение</th>
       <th scope="col">Цена</th>
+      <th scope="col">Количество</th>
       <th scope="col">Общая цена</th>
+      <th scope="col"></th>
     </tr>
   </thead>
   <tbody>
-  {{cart.products.all}}
-  {% for i in cart.products.all %}
+
+
+  {% for cart_product in cart.products.all %}
 
     <tr>
-      <th scope="row">{{i.content_object.title}}</th>
-      <td>{{i.content_object.image.url}}</td>
-       <td>{{i.content_object.price}}</td>
-       <td>{{i.content_object.final_price}}</td>
+      <th scope="row">{{cart_product.content_object.title}}</th>
+      <td class="w-25"><img src="{{cart_product.content_object.image.url}}" class="img-fluid"></td>
+       <td>{{cart_product.content_object.price}}</td>
+       <td>
+         <form action="{%url 'change_product_quantity' ct_model=cart_product.content_object.get_ct_model_name slug=cart_product.content_object.slug%}"method="POST">
+          {%csrf_token%}
+         <input type="number" class="form-control" name="qty" min="1" value="{{i.quantity}} " style="width: 70px;">
+         <br>
+         <input type="submit" class="btn btn-outline-dark" value="Изменить количество">
+         </form>
+       </td>
+        <td>{{cart_product.final_price}}</td>
+       <td><a href="{%url 'remove_from_cart' ct_model=cart_product.content_object.get_ct_model_name slug=cart_product.content_object.slug%}"><button class="btn btn-outline-dark">Удалить из корзины</button></a></td>
     </tr>
   {%endfor%}
+  <tr>
+    <td scope="col">Количество: {{cart.total_products}}</td>
+    <td scope="col">Финальная цена: {{cart.final_price}}</td>
+     <td><a href="{%url 'order'%}"><button class="btn btn-outline-dark">Перейти к оформлению</button></a></td>
+
+
+  </tr>
+
   </tbody>
 </table>
+
 {%endblock content%}
