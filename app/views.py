@@ -1,72 +1,66 @@
 from django.contrib import messages
-from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.views.generic import DetailView, View
 
 from .forms import OrderForm
 from .utils import refresh_cart
-from .models import SmartPhone, Cart, CartProduct, WashingMachine, LawnMover, Conditioner, VideoGameConsole, TV, \
-    PhotoCamera, LatestProducts, Customer
+from .models import Cart, CartProduct, Customer, Product, Category
 from .mixins import CartMixin
 
 
-class MainView(View):
-    def get(self, request, *args, **kwargs):
-        products = LatestProducts.objects.get_mainpage_products('smartphone', 'washing_machine', 'lawnmover',
-                                                                'photocamera', 'videogameconsole', 'tv',
-                                                                priority_models='conditioner')
-
-        context = {
-            'products': products,
-        }
-        return render(request, 'app/index.html', context)
-
-
-class ProductDetail(CartMixin, DetailView):
-    CT_MODELS = {
-        'smartphone': SmartPhone,
-        'washing_machine': WashingMachine,
-        'lawnmover': LawnMover,
-        'conditioner': Conditioner,
-        'videogameconsole': VideoGameConsole,
-        'tv': TV,
-        'photocamera': PhotoCamera
-
-    }
-
-    def dispatch(self, request, *args, **kwargs):
-        self.model = self.CT_MODELS[kwargs['ct_model']]
-        self.queryset = self.model.objects.all()
-        return super().dispatch(request, *args, **kwargs)
-
+class ProductView(CartMixin, DetailView):
+    model = Product
     context_object_name = 'product'
     template_name = 'app/product.html'
     slug_url_kwarg = 'slug'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['cart'] = self.cart
+
+        return context
+
+
+class MainView(CartMixin, View):
+    def get(self, request, *args, **kwargs):
+        products = Product.objects.all()
+        categories = Category.objects.all()
+        context = {
+            'products': products,
+            'cart': self.cart,
+            'categories': categories
+        }
+        return render(request, 'app/index.html', context)
+
+
+class LoginView(CartMixin, View):
+    pass
+
 
 class AddToCartView(CartMixin, View):
     def get(self, request, *args, **kwargs):
-        ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
-        content_type = ContentType.objects.get(model=ct_model)
-        product = content_type.model_class().objects.get(slug=product_slug)
+        product_slug = kwargs.get('slug')
+        product = Product.objects.get(slug=product_slug)
         cart_product, created = CartProduct.objects.get_or_create(user=self.cart.owner, cart=self.cart,
-                                                                  content_type=content_type, object_id=product.id,
+                                                                  product=product
                                                                   )
         if created:
             self.cart.products.add(cart_product)
-
+        cart_product.final_price = cart_product.product.price * cart_product.quantity
+        cart_product.save()
         messages.add_message(request, messages.INFO, 'Товар добавлен в корзину')
+        refresh_cart(self.cart)
         return HttpResponseRedirect('/cart/')
 
 
 class RemoveFromCartView(CartMixin, View):
     def get(self, request, *args, **kwargs):
-        ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
-        content_type = ContentType.objects.get(model=ct_model)
-        product = content_type.model_class().objects.get(slug=product_slug)
+        product_slug = kwargs.get('slug')
+
+        product = Product.objects.get(slug=product_slug)
         cart_product = CartProduct.objects.get(user=self.cart.owner, cart=self.cart,
-                                               content_type=content_type, object_id=product.id
+                                               product=product
                                                )
         self.cart.products.remove(cart_product)
         cart_product.delete()
@@ -85,29 +79,31 @@ class OrderView(CartMixin, View):
 
         return render(request, 'app/order.html', context)
 
-class ChangeProductQuantityView(CartMixin ,View):
+
+class ChangeProductQuantityView(CartMixin, View):
     def post(self, request, *args, **kwargs):
-        ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
-        content_type = ContentType.objects.get(model=ct_model)
-        product = content_type.model_class().objects.get(slug=product_slug)
+        product_slug = kwargs.get('slug')
+
+        product = Product.objects.get(slug=product_slug)
         cart_product = CartProduct.objects.get(user=self.cart.owner, cart=self.cart,
-                                               content_type=content_type, object_id=product.id
+                                               product=product
                                                )
         quantity = int(request.POST.get('qty'))
         cart_product.quantity = quantity
-        cart_product.final_price = cart_product.content_object.price * cart_product.quantity
+        cart_product.final_price = cart_product.product.price * cart_product.quantity
         cart_product.save()
         refresh_cart(self.cart)
         messages.add_message(request, messages.INFO, 'Количество товара изменено')
         return HttpResponseRedirect('/cart/')
+
 
 class CartView(CartMixin, View):
     def get(self, request, *args, **kwargs):
         context = {
             'cart': self.cart
         }
-
         return render(request, 'app/cart.html', context)
+
 
 class MakeOrderView(CartMixin, View):
     def post(self, request, *args, **kwargs):

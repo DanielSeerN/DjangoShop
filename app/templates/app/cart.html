@@ -19,19 +19,19 @@
   {% for cart_product in cart.products.all %}
 
     <tr>
-      <th scope="row">{{cart_product.content_object.title}}</th>
-      <td class="w-25"><img src="{{cart_product.content_object.image.url}}" class="img-fluid"></td>
-       <td>{{cart_product.content_object.price}}</td>
+      <th scope="row">{{cart_product.product.title}}</th>
+      <td class="w-25"><img src="{{cart_product.product.image.url}}" class="img-fluid"></td>
+       <td>{{cart_product.product.price}}</td>
        <td>
-         <form action="{%url 'change_product_quantity' ct_model=cart_product.content_object.get_ct_model_name slug=cart_product.content_object.slug%}"method="POST">
+         <form action="{%url 'change_product_quantity'  slug=cart_product.product.slug%}"method="POST">
           {%csrf_token%}
-         <input type="number" class="form-control" name="qty" min="1" value="{{i.quantity}} " style="width: 70px;">
+         <input type="number" class="form-control" name="qty" min="1" value="{{cart_product.quantity}}" style="width: 70px;">
          <br>
          <input type="submit" class="btn btn-outline-dark" value="Изменить количество">
          </form>
        </td>
         <td>{{cart_product.final_price}}</td>
-       <td><a href="{%url 'remove_from_cart' ct_model=cart_product.content_object.get_ct_model_name slug=cart_product.content_object.slug%}"><button class="btn btn-outline-dark">Удалить из корзины</button></a></td>
+       <td><a href="{%url 'remove_from_cart' slug=cart_product.product.slug%}"><button class="btn btn-outline-dark">Удалить из корзины</button></a></td>
     </tr>
   {%endfor%}
   <tr>

@@ -18,9 +18,9 @@
   {% for cart_product in cart.products.all %}
 
     <tr>
-      <th scope="row">{{cart_product.content_object.title}}</th>
-      <td class="w-25"><img src="{{cart_product.content_object.image.url}}" class="img-fluid"></td>
-       <td>{{cart_product.content_object.price}}</td>
+      <th scope="row">{{cart_product.product.title}}</th>
+      <td class="w-25"><img src="{{cart_product.product.image.url}}" class="img-fluid"></td>
+       <td>{{cart_product.product.price}}</td>
        <td>{{cart_product.final_price}}</td>
     </tr>
   {%endfor%}

@@ -1,6 +1,5 @@
 from django.views.generic import View
-from .models import SmartPhone, Cart, Customer, WashingMachine, LawnMover, Conditioner, TV, VideoGameConsole, \
-    CartProduct
+from .models import Cart, Customer
 
 
 class CartMixin(View):
