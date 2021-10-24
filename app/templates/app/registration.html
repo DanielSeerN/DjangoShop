@@ -2,11 +2,11 @@
 {% load crispy_forms_tags%}
 {%block content%}
 
-<h4 class="text-center">Авторизация</h4>
+<h4 class="text-center">Регистрация</h4>
 <form action="" method="post">
   {%csrf_token%}
   {{form|crispy}}
-  <input type="submit" class="btn btn-outline-dark" values="Войти">
+  <input type="submit" class="btn btn-outline-dark" values="Зарегистрироваться">
 </form>
 
 

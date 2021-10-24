@@ -1,9 +1,10 @@
 from django.contrib import messages
+from django.contrib.auth import authenticate, login
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.views.generic import DetailView, View
 
-from .forms import OrderForm
+from .forms import OrderForm, LoginForm, RegistrationForm
 from .utils import refresh_cart
 from .models import Cart, CartProduct, Customer, Product, Category
 from .mixins import CartMixin
@@ -34,8 +35,62 @@ class MainView(CartMixin, View):
         return render(request, 'app/index.html', context)
 
 
+class RegistrationView(CartMixin, View):
+    def get(self, request, *args, **kwargs):
+        form = RegistrationForm(request.POST or None)
+        context = {
+            'cart': self.cart,
+            'form': form
+        }
+        return render(request, 'app/registration.html', context)
+
+    def post(self, request, *args, **kwargs):
+        form = RegistrationForm(request.POST or None)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.username = form.cleaned_data['username']
+            user.set_password(form.cleaned_data['password'])
+            user.address = form.cleaned_data['address']
+            user.phone = form.cleaned_data['phone']
+            user.save()
+            create_customer = Customer.objects.create(user=user, phone=user.phone, adress=user.address)
+            user = authenticate(username=user.username, password=form.cleaned_data['password'])
+
+            login(request, user)
+            return redirect('/')
+        context = {
+            'cart': self.cart,
+            'form': form
+        }
+
+        return render(request, 'app/registration.html', context)
+
+
 class LoginView(CartMixin, View):
-    pass
+    def get(self, request, *args, **kwargs):
+        form = LoginForm(request.POST or None)
+        context = {
+            'cart': self.cart,
+            'form': form
+        }
+
+        return render(request, 'app/login.html', context)
+
+    def post(self, request, *args, **kwargs):
+        form = LoginForm(request.POST or None)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(username=username, password=password)
+            if user:
+                login(request, user)
+                return redirect('/')
+        context = {
+            'cart': self.cart,
+            'form': form
+        }
+
+        return render(request, 'app/login.html', context)
 
 
 class AddToCartView(CartMixin, View):
@@ -57,7 +112,6 @@ class AddToCartView(CartMixin, View):
 class RemoveFromCartView(CartMixin, View):
     def get(self, request, *args, **kwargs):
         product_slug = kwargs.get('slug')
-
         product = Product.objects.get(slug=product_slug)
         cart_product = CartProduct.objects.get(user=self.cart.owner, cart=self.cart,
                                                product=product
@@ -108,10 +162,9 @@ class CartView(CartMixin, View):
 class MakeOrderView(CartMixin, View):
     def post(self, request, *args, **kwargs):
         form = OrderForm(request.POST)
-        customer = Customer.objects.get(user=request.user)
         if form.is_valid():
             new_order = form.save(commit=False)
-            new_order.customer = customer
+            new_order.customer = self.customer
             new_order.customer_name = form.cleaned_data['customer_name']
             new_order.phone = form.cleaned_data['phone']
             new_order.adress = form.cleaned_data['adress']
@@ -121,7 +174,7 @@ class MakeOrderView(CartMixin, View):
             self.cart.save()
             new_order.cart = self.cart
             new_order.save()
-            customer.orders.add(new_order)
+            self.customer.orders.add(new_order)
             messages.add_message(request, messages.INFO, 'Заказ создан')
             return redirect('/')
         return redirect('/order/')
