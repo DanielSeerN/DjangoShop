@@ -1,0 +1,15 @@
+{%extends 'app/index.html'%}
+{% load crispy_forms_tags%}
+{%block content%}
+
+<h4 class="text-center">Авторизация</h4>
+<form action="" method="post">
+  {%csrf_token%}
+  {{form|crispy}}
+  <input type="submit" class="btn btn-outline-dark" values="Войти">
+</form>
+
+
+
+
+{%endblock content%}
