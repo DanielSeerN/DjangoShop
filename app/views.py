@@ -1,16 +1,33 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
+from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.views.generic import DetailView, View
 
 from .forms import OrderForm, LoginForm, RegistrationForm
 from .utils import refresh_cart
-from .models import Cart, CartProduct, Customer, Product, Category
+from .models import CartProduct, Customer, Product, Category, Order
 from .mixins import CartMixin
+
+import logging
+
+logger = logging.getLogger(__name__)  # Подключение логгера
+
+
+class ExceptionCheck(View):
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            response = super().dispatch(request, *args, **kwargs)
+        except Exception as ex:
+            pass
+        return response
 
 
 class ProductView(CartMixin, DetailView):
+    """
+    Представление для отображения продукта и его характеристик.
+    """
     model = Product
     context_object_name = 'product'
     template_name = 'app/product.html'
@@ -19,23 +36,33 @@ class ProductView(CartMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['cart'] = self.cart
-
         return context
 
 
-class MainView(CartMixin, View):
+class MainPageView(CartMixin, View):
+    """
+    Главная страница.
+    """
+
     def get(self, request, *args, **kwargs):
         products = Product.objects.all()
         categories = Category.objects.all()
+        slider = products[:3]
+        logger.warning('WARNING')
         context = {
             'products': products,
             'cart': self.cart,
-            'categories': categories
+            'categories': categories,
+            'slider': slider
         }
         return render(request, 'app/index.html', context)
 
 
 class RegistrationView(CartMixin, View):
+    """
+    Регистрация пользователя.
+    """
+
     def get(self, request, *args, **kwargs):
         form = RegistrationForm(request.POST or None)
         context = {
@@ -67,6 +94,10 @@ class RegistrationView(CartMixin, View):
 
 
 class LoginView(CartMixin, View):
+    """
+    Аутентификация пользователя.
+    """
+
     def get(self, request, *args, **kwargs):
         form = LoginForm(request.POST or None)
         context = {
@@ -93,7 +124,23 @@ class LoginView(CartMixin, View):
         return render(request, 'app/login.html', context)
 
 
+class CartView(CartMixin, View):
+    """
+    Корзина пользователя.
+    """
+
+    def get(self, request, *args, **kwargs):
+        context = {
+            'cart': self.cart
+        }
+        return render(request, 'app/cart.html', context)
+
+
 class AddToCartView(CartMixin, View):
+    """
+    Добавление продукта в корзину пользователя.
+    """
+
     def get(self, request, *args, **kwargs):
         product_slug = kwargs.get('slug')
         product = Product.objects.get(slug=product_slug)
@@ -104,12 +151,15 @@ class AddToCartView(CartMixin, View):
             self.cart.products.add(cart_product)
         cart_product.final_price = cart_product.product.price * cart_product.quantity
         cart_product.save()
-        messages.add_message(request, messages.INFO, 'Товар добавлен в корзину')
         refresh_cart(self.cart)
         return HttpResponseRedirect('/cart/')
 
 
 class RemoveFromCartView(CartMixin, View):
+    """
+    Удаление продукта из корзины.
+    """
+
     def get(self, request, *args, **kwargs):
         product_slug = kwargs.get('slug')
         product = Product.objects.get(slug=product_slug)
@@ -119,25 +169,18 @@ class RemoveFromCartView(CartMixin, View):
         self.cart.products.remove(cart_product)
         cart_product.delete()
         refresh_cart(self.cart)
-        messages.add_message(request, messages.INFO, 'Товар удалён из корзины')
         return redirect('/cart/')
 
 
-class OrderView(CartMixin, View):
-    def get(self, request, *args, **kwargs):
-        form = OrderForm(request.POST or None)
-        context = {
-            'cart': self.cart,
-            'form': form
-        }
-
-        return render(request, 'app/order.html', context)
-
-
 class ChangeProductQuantityView(CartMixin, View):
+    """
+
+    Изменение кол-ва продукта.
+
+    """
+
     def post(self, request, *args, **kwargs):
         product_slug = kwargs.get('slug')
-
         product = Product.objects.get(slug=product_slug)
         cart_product = CartProduct.objects.get(user=self.cart.owner, cart=self.cart,
                                                product=product
@@ -151,15 +194,40 @@ class ChangeProductQuantityView(CartMixin, View):
         return HttpResponseRedirect('/cart/')
 
 
-class CartView(CartMixin, View):
+class OrderView(CartMixin, View):
+    """
+    Заполение заказа через форму.
+    """
+
     def get(self, request, *args, **kwargs):
+        form = OrderForm(request.POST or None)
         context = {
-            'cart': self.cart
+            'cart': self.cart,
+            'form': form
         }
-        return render(request, 'app/cart.html', context)
+
+        return render(request, 'app/order.html', context)
+
+
+class CustomerOrdersView(CartMixin, View):
+    """
+    Заказы пользователя.
+    """
+
+    def get(self, request, *args, **kwargs):
+        orders = Order.objects.filter(customer=self.customer).order_by('-date_of_order')
+        context = {
+            'orders': orders
+        }
+        return render(request, 'app/customer_orders.html', context)
 
 
 class MakeOrderView(CartMixin, View):
+    """
+    Представление для добавления заказа пользователя в базу.
+    """
+
+    @transaction.atomic
     def post(self, request, *args, **kwargs):
         form = OrderForm(request.POST)
         if form.is_valid():

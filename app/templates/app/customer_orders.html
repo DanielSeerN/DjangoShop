@@ -1,0 +1,41 @@
+{%extends 'app/index.html'%}
+{%block content%}
+<h3 class="text-center mt-5 mb-5">{%if not orders%} У вас нет заказов {%else%} Ваши заказы {%endif%}</h3>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Номер заказа</th>
+      <th scope="col">Адресс</th>
+      <th scope="col">Цена</th>
+      <th scope="col">Общая цена</th>
+      <th scope="col">Статус заказа</th>
+        <th scope="col">Тип заказа</th>
+        <th scope="col">Дата создания заказа</th>
+
+    </tr>
+  </thead>
+  <tbody>
+
+
+  {% for order in orders %}
+    <tr>
+      <th scope="row">{{order.id}}</th>
+       <td>{{order.adress}}</td>
+       <td>{{order.customer_name}}</td>
+        <td>{{order.cart.final_price}}</td>
+        <td>{{order.order_status}}</td>
+        <td>{{order.type_of_order}}</td>
+        <td>{{order.date_of_order}}</td>
+    </tr>
+  {%endfor%}
+  <tr>
+
+
+
+  </tr>
+
+  </tbody>
+</table>
+
+{%endblock content%}
