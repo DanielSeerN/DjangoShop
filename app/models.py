@@ -60,7 +60,13 @@ class Cart(models.Model):
     """
     Модель для корзины
     """
-    owner = models.ForeignKey('Customer', verbose_name='Покупатель', on_delete=models.CASCADE, null=True)
+    owner = models.ForeignKey(
+        'Customer',
+        verbose_name='Покупатель',
+        on_delete=models.CASCADE,
+        null=True
+    )
+
     products = models.ManyToManyField(CartProduct, blank=True, related_name='related_cart')
     total_products = models.PositiveIntegerField(default=0)
     final_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Финальная цена', null=True)

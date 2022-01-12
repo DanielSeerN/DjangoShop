@@ -1,0 +1,11 @@
+{%extends 'shop/app/index.html'%}
+{%block content%}
+
+
+<h3 class="text-center mt-5 mb-5">Введите идентификатор продукта.</h3>
+
+<form action=""method="POST">
+          {%csrf_token%}
+    <input type="number" class="form-control" name="unique_id" min="1" value="{{product.slug}}" style="width: 70px;">
+    <input type="submit" class="btn btn-outline-dark" value="Найти">
+</form>

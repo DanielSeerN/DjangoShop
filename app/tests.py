@@ -16,7 +16,7 @@ class AppTest(TestCase):
         Функция для создания необходимых объектов для тестирования
         :return:
         """
-        image = SimpleUploadedFile('pngwing.com.png', content=b'', content_type='image/png')
+        image = SimpleUploadedFile('pngwing.png', content=b'', content_type='image/png')
         self.factory = RequestFactory()
         self.category = Category.objects.create(title='Стиральные машины', slug='peifanpief')
         self.product = Product.objects.create(
@@ -170,7 +170,7 @@ class AppTest(TestCase):
     def test_login(self):
         """
         Функция тестирования входа
-        :return:
+
         """
         self.assertTrue(self.client.login(username='кто-то', password='password'))
 

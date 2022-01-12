@@ -6,27 +6,18 @@ from django.shortcuts import render, redirect
 from django.views.generic import DetailView, View
 
 from .forms import OrderForm, LoginForm, RegistrationForm
-from .utils import refresh_cart
+from .utils.utils_cart import refresh_cart, get_cart_product
 from .models import CartProduct, Customer, Product, Category, Order
-from .mixins import CartMixin
+from .utils.mixins import CartMixin
 
 import logging
 
 logger = logging.getLogger(__name__)  # Подключение логгера
 
 
-class ExceptionCheck(View):
-    def dispatch(self, request, *args, **kwargs):
-        try:
-            response = super().dispatch(request, *args, **kwargs)
-        except Exception as ex:
-            pass
-        return response
-
-
 class ProductView(CartMixin, DetailView):
     """
-    Представление для отображения продукта и его характеристик.
+    Представление для отображения продукта.
     """
     model = Product
     context_object_name = 'product'
@@ -47,13 +38,11 @@ class MainPageView(CartMixin, View):
     def get(self, request, *args, **kwargs):
         products = Product.objects.all()
         categories = Category.objects.all()
-        slider = products[:3]
         logger.warning('WARNING')
         context = {
             'products': products,
             'cart': self.cart,
             'categories': categories,
-            'slider': slider
         }
         return render(request, 'app/index.html', context)
 
@@ -124,12 +113,32 @@ class LoginView(CartMixin, View):
         return render(request, 'app/login.html', context)
 
 
+class CategoryView(CartMixin, View):
+    """
+    Отображение продуктов, принадлежащих одной категории.
+    """
+
+    def get(self, request, *args, **kwargs):
+        category_slug = kwargs.get('slug')
+        category = Category.objects.get(slug=category_slug)
+        products = Product.objects.filter(category=category)
+        categories = Category.objects.all()
+        context = {
+            'products': products,
+            'cart': self.cart,
+            'categories': categories
+        }
+        return render(request, 'app/category_products.html', context)
+
+
 class CartView(CartMixin, View):
     """
     Корзина пользователя.
     """
 
     def get(self, request, *args, **kwargs):
+        if self.cart.final_price is None:
+            self.cart.final_price = 0
         context = {
             'cart': self.cart
         }
@@ -142,11 +151,7 @@ class AddToCartView(CartMixin, View):
     """
 
     def get(self, request, *args, **kwargs):
-        product_slug = kwargs.get('slug')
-        product = Product.objects.get(slug=product_slug)
-        cart_product, created = CartProduct.objects.get_or_create(user=self.cart.owner, cart=self.cart,
-                                                                  product=product
-                                                                  )
+        cart_product, created = get_cart_product(self, kwargs, add_to_cart=True)
         if created:
             self.cart.products.add(cart_product)
         cart_product.final_price = cart_product.product.price * cart_product.quantity
@@ -161,11 +166,7 @@ class RemoveFromCartView(CartMixin, View):
     """
 
     def get(self, request, *args, **kwargs):
-        product_slug = kwargs.get('slug')
-        product = Product.objects.get(slug=product_slug)
-        cart_product = CartProduct.objects.get(user=self.cart.owner, cart=self.cart,
-                                               product=product
-                                               )
+        cart_product = get_cart_product(self, kwargs)
         self.cart.products.remove(cart_product)
         cart_product.delete()
         refresh_cart(self.cart)
@@ -180,11 +181,7 @@ class ChangeProductQuantityView(CartMixin, View):
     """
 
     def post(self, request, *args, **kwargs):
-        product_slug = kwargs.get('slug')
-        product = Product.objects.get(slug=product_slug)
-        cart_product = CartProduct.objects.get(user=self.cart.owner, cart=self.cart,
-                                               product=product
-                                               )
+        cart_product = get_cart_product(self, kwargs)
         quantity = int(request.POST.get('qty'))
         cart_product.quantity = quantity
         cart_product.final_price = cart_product.product.price * cart_product.quantity

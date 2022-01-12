@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container px-4 px-lg-5">
+                <a class="navbar-brand" href="{%url 'main'%}">Хороший магазин</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Категории</a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                {%for category in categories%}
+                                <li><a class="dropdown-item" href="{%url 'category' slug=category.slug%}">{{category.title}}</a></li>
+                                {%endfor%}
+                            </ul>
+                        </li>
+                        {%if request.user.is_authenticated%}
+                        <div class="dropdown">
+                          <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                            Личный кабинет
+                          </a>
+
+                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <li><a class="dropdown-item" href="{%url 'logout'%}">Выйти</a></li>
+                          </ul>
+                        </div>
+                        {%else%}
+                        <a href="{%url 'login'%}">Войти</a>
+                        <a href="{%url 'registration'%}">Зарегистрироваться</a>
+                        {%endif%}
+                    </ul>
+                        <form class="d-flex" action="{%url 'cart'%}">
+                        <button class="btn btn-outline-dark" type="submit" >
+                            <i class="bi-cart-fill me-1"></i>
+                            Корзина
+                            <span class="badge bg-dark text-white ms-1 rounded-pill">{{cart.total_products}}</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+<h3 class="text-center mt-5 mb-5">Введите идентификатор продукта.</h3>
+
+<form action=""method="POST">
+          {%csrf_token%}
+    <input type="number" class="form-control" name="unique_id" min="1" value="{{product.slug}}" style="width: 70px;">
+    <input type="submit" class="btn btn-outline-dark" value="Найти">
+</form>

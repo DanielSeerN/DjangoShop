@@ -28,7 +28,7 @@
                             <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Категории</a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 {%for category in categories%}
-                                <li><a class="dropdown-item" href="#!">{{category.title}}</a></li>
+                                <li><a class="dropdown-item" href="{%url 'category' slug=category.slug%}">{{category.title}}</a></li>
                                 {%endfor%}
                             </ul>
                         </li>
@@ -72,11 +72,7 @@
                     <div class="carousel-item active">
                         <img src="{%static 'img/ps5.jpg'%}" class="d-block h-100">
                     </div>
-                    {%for product in slider%}
-                    <div class="carousel-item">
-                        <img src="{{product.image.url}}" class="d-block img-fluid" styl="width:100px;height:200px">
-                    </div>
-                    {%endfor%}
+
                 </div>
                 <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleFade"
                         data-bs-slide="prev">
