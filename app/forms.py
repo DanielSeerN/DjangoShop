@@ -82,10 +82,9 @@ class RegistrationForm(forms.ModelForm):
         fields = ('username', 'password', 'confirm_password', 'first_name', 'last_name', 'address', 'phone', 'email')
 
 
-class SendQuestionMail(forms.ModelForm):
-    first_name = forms.CharField(max_length=255)
-    last_name = forms.CharField(max_length=255)
-    question = forms.TextInput()
-    user_mail = forms.CharField(max_length=255)
-
+class SendQuestionMail(forms.Form):
+    first_name = forms.CharField(max_length=255, label='Ваше имя')
+    last_name = forms.CharField(max_length=255, label='Ваша Фамилия')
+    user_mail = forms.EmailField(max_length=255, label='Укажите почту, на которую хотите получить ответ')
+    question = forms.CharField(widget=forms.Textarea, label='Опишите свою проблему')
 

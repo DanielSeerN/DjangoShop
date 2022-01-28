@@ -287,13 +287,15 @@ class SendEMailView(CartMixin, View):
             'cart': self.cart,
             'form': form
         }
-        return render(request, 'app/main.html', context)
+        return render(request, 'app/mail.html', context)
 
     def post(self, request, *args, **kwargs):
         form = SendQuestionMail(request.POST)
         if form.is_valid():
-            user_email = form.cleaned_data['user_email']
+            user_email = form.cleaned_data['user_mail']
             email_text = form.cleaned_data['question']
-            send_notification_email(user_email)
+            user_name = form.cleaned_data['first_name']
+            user_last_name = form.cleaned_data['last_name']
+            send_notification_email(user_email, user_name, user_last_name)
             send_email_to_host(user_email, email_text)
             return redirect('/')
