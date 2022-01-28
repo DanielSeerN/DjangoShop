@@ -23,7 +23,7 @@
       <td class="w-25"><img src="{{cart_product.product.image.url}}" class="img-fluid"></td>
        <td>{{cart_product.product.price}}</td>
        <td>
-         <form action="{%url 'change_product_quantity'  slug=cart_product.product.slug%}"method="POST">
+         <form action="{%url 'change_product_quantity'  slug=cart_product.product.slug%}" method="POST">
           {%csrf_token%}
          <input type="number" class="form-control" name="qty" min="1" value="{{cart_product.quantity}}" style="width: 70px;">
          <br>

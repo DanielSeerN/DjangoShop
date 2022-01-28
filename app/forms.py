@@ -17,6 +17,7 @@ class OrderForm(forms.ModelForm):
 
 class LoginForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].label = 'Логин'
@@ -43,6 +44,7 @@ class RegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
     phone = forms.CharField()
     address = forms.CharField()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].label = 'Логин'
@@ -78,4 +80,12 @@ class RegistrationForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('username', 'password', 'confirm_password', 'first_name', 'last_name', 'address', 'phone', 'email')
+
+
+class SendQuestionMail(forms.ModelForm):
+    first_name = forms.CharField(max_length=255)
+    last_name = forms.CharField(max_length=255)
+    question = forms.TextInput()
+    user_mail = forms.CharField(max_length=255)
+
 

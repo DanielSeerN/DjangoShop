@@ -5,9 +5,10 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.views.generic import DetailView, View
 
-from .forms import OrderForm, LoginForm, RegistrationForm
+from .services import send_email_to_host, send_notification_email
+from .forms import OrderForm, LoginForm, RegistrationForm, SendQuestionMail
 from .utils.utils_cart import refresh_cart, get_cart_product
-from .models import CartProduct, Customer, Product, Category, Order
+from .models import Customer, Product, Category, Order
 from .utils.mixins import CartMixin
 
 import logging
@@ -38,12 +39,12 @@ class MainPageView(CartMixin, View):
     def get(self, request, *args, **kwargs):
         products = Product.objects.all()
         categories = Category.objects.all()
-        logger.warning('WARNING')
         context = {
             'products': products,
             'cart': self.cart,
             'categories': categories,
         }
+
         return render(request, 'app/index.html', context)
 
 
@@ -206,6 +207,40 @@ class OrderView(CartMixin, View):
         return render(request, 'app/order.html', context)
 
 
+class GetSearchText(CartMixin, View):
+    """
+    Обработка поискового запроса
+    """
+
+    def post(self, request, *args, **kwargs):
+        search_term = str(request.POST.get('search_text'))
+        search_words = search_term.split(' ')
+        search_slug = '*'.join(search_words)
+        return redirect(f'/search-results/{search_slug}')
+
+
+class SearchResultPage(CartMixin, View):
+    """
+    Страница с результатом поиска.
+    """
+
+    def get(self, request, *args, **kwargs):
+        search_term = kwargs.get('slug')
+        search_text = search_term.split('*')
+        products = Product.objects.all()
+        searched_products = []
+        for product in products:
+            for search_word in search_text:
+                if search_word in product.title:
+                    searched_product = Product.objects.get(title=product.title)
+                    searched_products.append(searched_product)
+        context = {
+            'searched_products': searched_products,
+            'cart': self.cart
+        }
+        return render(request, 'app/search.html', context)
+
+
 class CustomerOrdersView(CartMixin, View):
     """
     Заказы пользователя.
@@ -243,3 +278,22 @@ class MakeOrderView(CartMixin, View):
             messages.add_message(request, messages.INFO, 'Заказ создан')
             return redirect('/')
         return redirect('/order/')
+
+
+class SendEMailView(CartMixin, View):
+    def get(self, request, *args, **kwargs):
+        form = SendQuestionMail(request.POST)
+        context = {
+            'cart': self.cart,
+            'form': form
+        }
+        return render(request, 'app/main.html', context)
+
+    def post(self, request, *args, **kwargs):
+        form = SendQuestionMail(request.POST)
+        if form.is_valid():
+            user_email = form.cleaned_data['user_email']
+            email_text = form.cleaned_data['question']
+            send_notification_email(user_email)
+            send_email_to_host(user_email, email_text)
+            return redirect('/')

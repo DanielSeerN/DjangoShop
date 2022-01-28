@@ -21,6 +21,12 @@
             <div class="container px-4 px-lg-5">
                 <a class="navbar-brand" href="{%url 'main'%}">Хороший магазин</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="mb-7">
+                    <form action="/search/" method="post">
+                        {%csrf_token%}
+                        <input type="text" class="form-control" id="search_text" name="search_text" placeholder="Поиск по сайту">
+                    </form>
+                </div>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
 
@@ -61,6 +67,7 @@
         <!-- Header-->
         {%block content%}
         <header class="bg-dark py-5" >
+
             <div class="container px-4 px-lg-5 my-5">
                 <div class="text-center text-white">
                     <h1 class="display-4 fw-bolder">Лучший маркетплейc в мире!</h1>
@@ -93,7 +100,6 @@
                     <div class="row">
                         {%for product in products%}
                         <div class="col-lg-4 col-md-6 mb-6">
-                            <style></style>
                             <div class="h-100">
                                 <!-- Product image-->
 
@@ -124,6 +130,7 @@
          {%endblock content%}
         <!-- Footer-->
         <footer class="py-5 bg-dark">
+            <div class="container"><p class="m-0 text-center text-white">Что-то не так? Напишите нам на <a href="">почту!</a></p></div>
             <div class="container"><p class="m-0 text-center text-white">Copyright &copy; мой сайт брать нельзя</p></div>
         </footer>
         <!-- Bootstrap core JS-->

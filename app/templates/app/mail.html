@@ -1,0 +1,16 @@
+{%extends 'app/index.html'%}
+{% load crispy_forms_tags%}
+{%block content%}
+<h3 class="text-center mt-5 mb-5"> </h3>
+
+
+<form action="{%url 'send_mail'%}" method="post">
+  {%csrf_token%}
+  <div class="col-md-7 mx-auto">{{form|crispy}}</div>
+  <input type="submit" class="btn btn-outline-dark" values="Оформить заказ">
+</form>
+
+
+
+
+{%endblock content%}

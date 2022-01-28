@@ -12,7 +12,10 @@ from .views import (CartView,
                     LoginView,
                     RegistrationView,
                     CustomerOrdersView,
-                    CategoryView)
+                    CategoryView,
+                    SearchResultPage,
+                    GetSearchText,
+                    SendEMailView)
 
 urlpatterns = [
     path('', MainPageView.as_view(), name='main'),
@@ -28,6 +31,7 @@ urlpatterns = [
     path('registration/', RegistrationView.as_view(), name='registration'),
     path('orders/', CustomerOrdersView.as_view(), name='orders'),
     path('category/<str:slug>/', CategoryView.as_view(), name='category'),
-
-
+    path('search/', GetSearchText.as_view(), name='search'),
+    path('search-results/<str:slug>', SearchResultPage.as_view(), name='search_page'),
+    path('mail-us/', SendEMailView.as_view(), name='send_mail')
 ]

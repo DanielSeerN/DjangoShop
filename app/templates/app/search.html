@@ -1,0 +1,39 @@
+{%extends 'app/index.html'%}
+{%block content%}
+<section class="py-5">
+                {%if not searched_products%}
+                <h3 class="text-center mt-5 mb-5">По вашему запросу ничего не найдено</h3>
+                {%else%}
+                <div class="container ">
+                    <div class="row">
+                        {%for product in searched_products%}
+                        <div class="col-lg-4 col-md-6 mb-6">
+                            <div class="h-100">
+                                <!-- Product image-->
+
+                                <a href="{{product.get_absolute_url}}"><img class="card-img-top" src="{{product.image.url}}" alt="Товар" /></a>
+                                <div class="card-body p-4">
+                                    <div class="text-center">
+                                        <!-- Product name-->
+                                        <a href="{{product.get_absolute_url}}" style="text-decoration:none; color:black;"><h5 class="fw-bolder">{{product.title}}</h5></a>
+                                        {{product.price}}
+                                    </div>
+                                </div>
+                                <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                                    {%if request.user.is_authenticated%}
+                                    <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{% url 'add_to_cart' slug=product.slug%}">Добавить в корзину</a></div>
+                                    {%else%}
+                                    <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{% url 'login'%}">Добавить в корзину</a></div>
+                                    {%endif%}
+                                </div>
+                            </div>
+
+                        </div>
+                        {%endfor%}
+                    </div>
+                </div>
+                {%endif%}
+
+        </section>
+
+{%endblock content%}
