@@ -11,10 +11,6 @@ from .utils.utils_cart import refresh_cart, get_cart_product
 from .models import Customer, Product, Category, Order
 from .utils.mixins import CartMixin
 
-import logging
-
-logger = logging.getLogger(__name__)  # Подключение логгера
-
 
 class ProductView(CartMixin, DetailView):
     """
@@ -281,6 +277,10 @@ class MakeOrderView(CartMixin, View):
 
 
 class SendEMailView(CartMixin, View):
+    """
+    Отправка писем с фидбеком или жалобами
+    """
+
     def get(self, request, *args, **kwargs):
         form = SendQuestionMail(request.POST)
         context = {
