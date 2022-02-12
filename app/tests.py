@@ -14,7 +14,6 @@ class AppTest(TestCase):
     def setUp(self) -> None:
         """
         Функция для создания необходимых объектов для тестирования
-        :return:
         """
         image = SimpleUploadedFile('pngwing.png', content=b'', content_type='image/png')
         self.factory = RequestFactory()
@@ -40,7 +39,6 @@ class AppTest(TestCase):
     def test_add_to_cart(self):
         """
         Функция тестирования добавления продукта в корзину
-        :return:
         """
         self.cart.products.add(self.cart_product)
         refresh_cart(self.cart)
@@ -50,7 +48,6 @@ class AppTest(TestCase):
     def test_response_from_add_to_cart(self):
         """
         Функция тестирования ответа от представления добавления продукта в корзину
-        :return:
         """
         request = self.factory.get('')
         request.user = self.user
@@ -61,7 +58,6 @@ class AppTest(TestCase):
     def test_mock_homepage(self):
         """
         Функция тестирования ответа от главной страницы
-        :return:
         """
         mock_data = mock.Mock(status_code=555)
         with mock.patch('app.views.MainPageView.get', return_value=mock_data) as mock_:
@@ -73,7 +69,6 @@ class AppTest(TestCase):
     def test_remove_from_cart(self):
         """
         Функция тестирования удаления продукта из корзины
-        :return:
         """
         self.cart.products.add(self.cart_product)
         refresh_cart(self.cart)
@@ -85,7 +80,6 @@ class AppTest(TestCase):
     def test_response_from_remove_from_cart(self):
         """
         Функция тестирования ответа от представления удаления продукта из корзины
-        :return:
         """
         request = self.factory.get('')
         request.user = self.user
@@ -96,7 +90,6 @@ class AppTest(TestCase):
     def test_product_quantity_change(self):
         """
         Функция тестирования изменения количества продуктов
-        :return:
         """
         self.cart.products.add(self.cart_product)
         self.cart_product.quantity = 2
@@ -107,7 +100,6 @@ class AppTest(TestCase):
     def response_from_product_quantity_change(self):
         """
         Функция тестирования ответа от представления изменения количества продуктов
-        :return:
         """
         request = self.factory.get('')
         request.user = self.user
@@ -117,8 +109,7 @@ class AppTest(TestCase):
 
     def test_response_from_cart(self):
         """
-        Функция тестирования ответа от представления корзины
-        :return:
+        Функция тестирования ответа от представления корзины:
         """
         request = self.factory.get('/cart')
         request.user = self.user
@@ -127,8 +118,7 @@ class AppTest(TestCase):
 
     def test_response_from_orders(self):
         """
-        Функция тестирования ответа от представления заказа
-        :return:
+        Функция тестирования ответа от представления заказа:
         """
         request = self.factory.get('')
         request.user = self.user
@@ -138,7 +128,6 @@ class AppTest(TestCase):
     def test_response_customer_orders(self):
         """
         Функция тестирования ответа от представления заказов покупателя
-        :return:
         """
         request = self.factory.get('/orders/')
         request.user = self.user
@@ -148,7 +137,6 @@ class AppTest(TestCase):
     def test_response_from_login(self):
         """
         Функция тестирования ответа от представления входа в аккаунт
-        :return:
         """
         request = self.factory.get('/login/')
         request.user = self.user
@@ -158,7 +146,6 @@ class AppTest(TestCase):
     def test_registration(self):
         """
         Функция тестирования регистрации
-        :return:
         """
         user = User.objects.create_user(username='никто', password='password')
         user.phone = '+123214514'
@@ -170,14 +157,12 @@ class AppTest(TestCase):
     def test_login(self):
         """
         Функция тестирования входа
-
         """
         self.assertTrue(self.client.login(username='кто-то', password='password'))
 
     def test_response_from_registration(self):
         """
         Функция тестирования ответа от представления регистрации
-        :return:
         """
         request = self.factory.get('/registration/')
         request.user = self.user

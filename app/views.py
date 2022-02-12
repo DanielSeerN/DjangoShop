@@ -11,7 +11,7 @@ from .forms import OrderForm, LoginForm, RegistrationForm, SendQuestionMail
 from .utils.order_utils import get_customer_orders
 from .utils.product_utils import get_category, get_products_by_category, get_all_categories, get_all_products, \
     get_product
-from .utils.utils_cart import refresh_cart, get_cart_product, create_customer
+from .utils.cart_utils import refresh_cart, get_cart_product, create_customer
 from .utils.mixins import CartMixin
 
 from product_specifications.utils import get_product_specifications

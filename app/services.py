@@ -13,10 +13,6 @@ PASSWORD = os.getenv('email_host_password')
 def send_notification_email(user_email, user_name, user_last_name):
     """
     Прислать письмо-оповещение
-    :param user_email:
-    :param user_name:
-    :param user_last_name:
-    :return:
     """
     server = smtplib.SMTP(host='smtp.gmail.com', port=587)
     server.starttls()
@@ -28,9 +24,6 @@ def send_notification_email(user_email, user_name, user_last_name):
 def send_email_to_host(user_email, email_text):
     """
     Прислать письмо в почтовый хост-ящик
-    :param user_email:
-    :param email_text:
-    :return:
     """
     server = smtplib.SMTP(host='smtp.gmail.com', port=587)
     server.starttls()
@@ -42,8 +35,6 @@ def send_email_to_host(user_email, email_text):
 def process_search_term(search_term):
     """
     Формирование поискового запроса
-    :param search_term:
-    :return:
     """
     search_term_words = search_term.split(' ')
     search_slug = '*'.join(search_term_words)
@@ -53,8 +44,6 @@ def process_search_term(search_term):
 def process_search_slug(kwargs):
     """
     Обработка поискового запроса
-    :param kwargs:
-    :return:
     """
     search_slug = kwargs.get('slug')
     search_term_words = search_slug.split('*')
@@ -64,9 +53,6 @@ def process_search_slug(kwargs):
 def search_products(all_products, search_words):
     """
     Поиск продуктов по запросу
-    :param all_products:
-    :param search_words:
-    :return:
     """
     searched_products = []
     for product in all_products:
