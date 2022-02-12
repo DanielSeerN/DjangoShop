@@ -3,38 +3,42 @@ from django.contrib.auth import authenticate, login
 from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
-from django.views.generic import DetailView, View
+from django.views.generic import View
 
-from .services import send_email_to_host, send_notification_email
+from .services import send_email_to_host, send_notification_email, process_search_term, process_search_slug, \
+    search_products
 from .forms import OrderForm, LoginForm, RegistrationForm, SendQuestionMail
-from .utils.utils_cart import refresh_cart, get_cart_product
-from .models import Customer, Product, Category, Order
+from .utils.order_utils import get_customer_orders
+from .utils.product_utils import get_category, get_products_by_category, get_all_categories, get_all_products, \
+    get_product
+from .utils.utils_cart import refresh_cart, get_cart_product, create_customer
 from .utils.mixins import CartMixin
 
+from product_specifications.utils import get_product_specifications
 
-class ProductView(CartMixin, DetailView):
+
+class ProductView(CartMixin):
     """
     Представление для отображения продукта.
     """
-    model = Product
-    context_object_name = 'product'
-    template_name = 'app/product.html'
-    slug_url_kwarg = 'slug'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['cart'] = self.cart
-        return context
-
+    def get(self, request, **kwargs):
+        product = get_product(kwargs)
+        specifications = get_product_specifications(product)
+        context = {
+            'product': product,
+            'details': specifications
+        }
+        return render(request, 'app/product.html', context)
 
 class MainPageView(CartMixin, View):
     """
     Главная страница.
     """
 
-    def get(self, request, *args, **kwargs):
-        products = Product.objects.all()
-        categories = Category.objects.all()
+    def get(self, request):
+        products = get_all_products()
+        categories = get_all_categories()
         context = {
             'products': products,
             'cart': self.cart,
@@ -49,7 +53,7 @@ class RegistrationView(CartMixin, View):
     Регистрация пользователя.
     """
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         form = RegistrationForm(request.POST or None)
         context = {
             'cart': self.cart,
@@ -57,7 +61,7 @@ class RegistrationView(CartMixin, View):
         }
         return render(request, 'app/registration.html', context)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         form = RegistrationForm(request.POST or None)
         if form.is_valid():
             user = form.save(commit=False)
@@ -66,7 +70,7 @@ class RegistrationView(CartMixin, View):
             user.address = form.cleaned_data['address']
             user.phone = form.cleaned_data['phone']
             user.save()
-            create_customer = Customer.objects.create(user=user, phone=user.phone, adress=user.address)
+            create_customer(user)
             user = authenticate(username=user.username, password=form.cleaned_data['password'])
 
             login(request, user)
@@ -84,7 +88,7 @@ class LoginView(CartMixin, View):
     Аутентификация пользователя.
     """
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         form = LoginForm(request.POST or None)
         context = {
             'cart': self.cart,
@@ -93,7 +97,7 @@ class LoginView(CartMixin, View):
 
         return render(request, 'app/login.html', context)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         form = LoginForm(request.POST or None)
         if form.is_valid():
             username = form.cleaned_data['username']
@@ -115,11 +119,10 @@ class CategoryView(CartMixin, View):
     Отображение продуктов, принадлежащих одной категории.
     """
 
-    def get(self, request, *args, **kwargs):
-        category_slug = kwargs.get('slug')
-        category = Category.objects.get(slug=category_slug)
-        products = Product.objects.filter(category=category)
-        categories = Category.objects.all()
+    def get(self, request, **kwargs):
+        category = get_category(kwargs)
+        products = get_products_by_category(category)
+        categories = get_all_categories()
         context = {
             'products': products,
             'cart': self.cart,
@@ -133,7 +136,7 @@ class CartView(CartMixin, View):
     Корзина пользователя.
     """
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         if self.cart.final_price is None:
             self.cart.final_price = 0
         context = {
@@ -147,7 +150,7 @@ class AddToCartView(CartMixin, View):
     Добавление продукта в корзину пользователя.
     """
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, **kwargs):
         cart_product, created = get_cart_product(self, kwargs, add_to_cart=True)
         if created:
             self.cart.products.add(cart_product)
@@ -162,7 +165,7 @@ class RemoveFromCartView(CartMixin, View):
     Удаление продукта из корзины.
     """
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, **kwargs):
         cart_product = get_cart_product(self, kwargs)
         self.cart.products.remove(cart_product)
         cart_product.delete()
@@ -177,7 +180,7 @@ class ChangeProductQuantityView(CartMixin, View):
 
     """
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, **kwargs):
         cart_product = get_cart_product(self, kwargs)
         quantity = int(request.POST.get('qty'))
         cart_product.quantity = quantity
@@ -193,7 +196,7 @@ class OrderView(CartMixin, View):
     Заполение заказа через форму.
     """
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         form = OrderForm(request.POST or None)
         context = {
             'cart': self.cart,
@@ -208,10 +211,9 @@ class GetSearchText(CartMixin, View):
     Обработка поискового запроса
     """
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         search_term = str(request.POST.get('search_text'))
-        search_words = search_term.split(' ')
-        search_slug = '*'.join(search_words)
+        search_slug = process_search_term(search_term)
         return redirect(f'/search-results/{search_slug}')
 
 
@@ -220,16 +222,10 @@ class SearchResultPage(CartMixin, View):
     Страница с результатом поиска.
     """
 
-    def get(self, request, *args, **kwargs):
-        search_term = kwargs.get('slug')
-        search_text = search_term.split('*')
-        products = Product.objects.all()
-        searched_products = []
-        for product in products:
-            for search_word in search_text:
-                if search_word in product.title:
-                    searched_product = Product.objects.get(title=product.title)
-                    searched_products.append(searched_product)
+    def get(self, request, **kwargs):
+        search_term_words = process_search_slug(kwargs)
+        products = get_all_products()
+        searched_products = search_products(products, search_term_words)
         context = {
             'searched_products': searched_products,
             'cart': self.cart
@@ -242,8 +238,8 @@ class CustomerOrdersView(CartMixin, View):
     Заказы пользователя.
     """
 
-    def get(self, request, *args, **kwargs):
-        orders = Order.objects.filter(customer=self.customer).order_by('-date_of_order')
+    def get(self, request):
+        orders = get_customer_orders(self).order_by('-date_of_order')
         context = {
             'orders': orders
         }
@@ -256,7 +252,7 @@ class MakeOrderView(CartMixin, View):
     """
 
     @transaction.atomic
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         form = OrderForm(request.POST)
         if form.is_valid():
             new_order = form.save(commit=False)
@@ -281,7 +277,7 @@ class SendEMailView(CartMixin, View):
     Отправка писем с фидбеком или жалобами
     """
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         form = SendQuestionMail(request.POST)
         context = {
             'cart': self.cart,
@@ -289,7 +285,7 @@ class SendEMailView(CartMixin, View):
         }
         return render(request, 'app/mail.html', context)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         form = SendQuestionMail(request.POST)
         if form.is_valid():
             user_email = form.cleaned_data['user_mail']

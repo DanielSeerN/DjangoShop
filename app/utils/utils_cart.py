@@ -1,5 +1,5 @@
 from django.db import models
-from ..models import Product, CartProduct
+from ..models import Product, CartProduct, Customer
 
 
 def refresh_cart(cart):
@@ -19,6 +19,13 @@ def refresh_cart(cart):
 
 
 def get_cart_product(self, kwargs, add_to_cart=False):
+    """
+    Получение или создание продукта для корзины
+    :param self:
+    :param kwargs:
+    :param add_to_cart:
+    :return:
+    """
     product_slug = kwargs.get('slug')
     product = Product.objects.get(slug=product_slug)
     if add_to_cart:
@@ -31,3 +38,13 @@ def get_cart_product(self, kwargs, add_to_cart=False):
                                                product=product
                                                )
     return cart_product
+
+
+def create_customer(user):
+    """
+    Создание покупателя
+    :param user:
+    :return:
+    """
+    customer = Customer.objects.create(user=user, phone=user.phone, adress=user.address)
+    return customer

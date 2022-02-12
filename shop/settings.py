@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,6 +28,9 @@ SECRET_KEY = 'django-insecure-v6+d8f8n(k(jp=(3-&0d00l@g%c*a5kc@3gp-sth*^fft2(w*j
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+load_dotenv()
+SERVER_PASSWORD = os.getenv('server_password')
 
 # Application definition
 
@@ -83,8 +89,12 @@ WSGI_APPLICATION = 'shop.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'shop-django',
+        'USER': 'postgres',
+        'PASSWORD': SERVER_PASSWORD,
+        'HOST': '127.0.0.1',
+        'PORT': '5432'
     }
 }
 
@@ -145,32 +155,7 @@ CACHES = {
         'LOCATION': os.path.join(BASE_DIR, 'cache_app'),
     }
 }
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'file': {
-            'level': 'WARNING',
-            'class': 'logging.FileHandler',
-            'filename': r'C:\Users\79811\PycharmProjects\pythonProject4\shop\log.log',
-            'formatter': 'verbose'
 
-        },
-    },
-    'loggers': {
-        'app': {
-            'handlers': ['file'],
-            'level': 'WARNING',
-            'propagate': True,
-        },
-    },
-}
 # SMTP settings
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587

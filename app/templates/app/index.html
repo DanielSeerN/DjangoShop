@@ -74,24 +74,7 @@
                     <p class="lead fw-normal text-white-50 mb-0">(нет)</p>
                 </div>
             </div>
-             <div id="carouselExampleFade" class="carousel slide carousel-fade" data-bs-ride="carousel">
-                <div class="carousel-inner" style="margin-left:500px;">
-                    <div class="carousel-item active">
-                        <img src="{%static 'img/ps5.jpg'%}" class="d-block h-100">
-                    </div>
 
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleFade"
-                        data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Предыдущий</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleFade"
-                        data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Следующий</span>
-                </button>
-            </div>
         </header>
         <!-- Section-->
         <section class="py-5">
@@ -116,6 +99,11 @@
                                     <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{% url 'add_to_cart' slug=product.slug%}">Добавить в корзину</a></div>
                                     {%else%}
                                     <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{% url 'login'%}">Добавить в корзину</a></div>
+                                    {%endif%}
+                                    {%if request.user.is_superuser%}
+                                    <form action="/specification/product-specification/{{product.slug}}">
+                                        <button type="submit" class="btn btn-info">Редактировать параметры</button>
+                                    </form>
                                     {%endif%}
                                 </div>
                             </div>
