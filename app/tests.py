@@ -1,8 +1,10 @@
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, RequestFactory
+
 from unittest import mock
+
 from .models import Product, Category, User, Customer, Cart, CartProduct, Order
-from .utils import refresh_cart
+from .utils.cart_utils import refresh_cart
 from .views import AddToCartView, MainPageView, RemoveFromCartView, ChangeProductQuantityView, LoginView, CartView, \
     OrderView, CustomerOrdersView, RegistrationView
 
@@ -11,6 +13,7 @@ class AppTest(TestCase):
     """
     Тесты приложения
     """
+
     def setUp(self) -> None:
         """
         Функция для создания необходимых объектов для тестирования
