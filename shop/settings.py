@@ -28,6 +28,11 @@ ALLOWED_HOSTS = []
 
 
 SERVER_PASSWORD = os.getenv('server_password')
+SERVER_HOST = os.getenv('host')
+SERVER_PORT = os.getenv('port')
+SERVER_USER = os.getenv('user')
+SERVER_NAME = os.getenv('name')
+
 
 # Application definition
 
@@ -87,11 +92,11 @@ WSGI_APPLICATION = 'shop.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'shop-django',
-        'USER': 'postgres',
+        'NAME': SERVER_NAME,
+        'USER': SERVER_USER,
         'PASSWORD': SERVER_PASSWORD,
-        'HOST': '127.0.0.1',
-        'PORT': '5432'
+        'HOST': SERVER_HOST,
+        'PORT': SERVER_PORT,
     }
 }
 

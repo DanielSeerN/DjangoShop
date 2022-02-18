@@ -1,5 +1,4 @@
 from django.db import models
-
 from app.models import Product, Category
 
 
@@ -20,3 +19,4 @@ class ProductSpecification(models.Model):
     product = models.ForeignKey(Product, verbose_name='product', on_delete=models.CASCADE)
     specification = models.ForeignKey(CategorySpecification, on_delete=models.CASCADE)
     value = models.CharField(max_length=255)
+

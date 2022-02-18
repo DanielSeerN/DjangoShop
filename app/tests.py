@@ -1,7 +1,9 @@
+import unittest
+
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, RequestFactory
 
-from unittest import mock
+from unittest import mock, main
 
 from .models import Product, Category, User, Customer, Cart, CartProduct, Order
 from .utils.cart_utils import refresh_cart

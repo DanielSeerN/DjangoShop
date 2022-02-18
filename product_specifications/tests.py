@@ -69,4 +69,4 @@ class ProductSpecificationTest(TestCase):
         response = UpdateSpecification.as_view()(request, slug=self.product.slug)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, 'specification/')
-# Create your tests here.
+
