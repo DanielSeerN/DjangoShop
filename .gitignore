@@ -3,3 +3,4 @@
 /.pytest_cache/
 /app/migrations/
 /product_specifications/migrations/
+db.sqlite3

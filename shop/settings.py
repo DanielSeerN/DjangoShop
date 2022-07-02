@@ -27,11 +27,11 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
-SERVER_PASSWORD = os.getenv('server_password')
-SERVER_HOST = os.getenv('host')
-SERVER_PORT = os.getenv('port')
-SERVER_USER = os.getenv('user')
-SERVER_NAME = os.getenv('name')
+# SERVER_PASSWORD = os.getenv('server_password')
+# SERVER_HOST = os.getenv('host')
+# SERVER_PORT = os.getenv('port')
+# SERVER_USER = os.getenv('user')
+# SERVER_NAME = os.getenv('name')
 
 
 # Application definition
@@ -90,13 +90,17 @@ WSGI_APPLICATION = 'shop.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #     'NAME': SERVER_NAME,
+    #     'USER': SERVER_USER,
+    #     'PASSWORD': SERVER_PASSWORD,
+    #     'HOST': SERVER_HOST,
+    #     'PORT': SERVER_PORT,
+    # }
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': SERVER_NAME,
-        'USER': SERVER_USER,
-        'PASSWORD': SERVER_PASSWORD,
-        'HOST': SERVER_HOST,
-        'PORT': SERVER_PORT,
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 

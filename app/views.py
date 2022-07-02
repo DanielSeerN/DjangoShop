@@ -8,11 +8,12 @@ from django.views.generic import View
 from .services import send_email_to_host, send_notification_email, process_search_term, process_search_slug, \
     search_products
 from .forms import OrderForm, LoginForm, RegistrationForm, SendQuestionMail
-from .utils.order_utils import get_customer_orders
+from .utils.order_utils import get_customer_orders, make_order_form_clean
 from .utils.product_utils import get_category, get_products_by_category, get_all_categories, get_all_products, \
     get_product
-from .utils.cart_utils import refresh_cart, get_cart_product, create_customer
+from .utils.cart_utils import refresh_cart, get_cart_product
 from .utils.mixins import CartMixin
+from .utils.user_utils import authenticate_user, register_user
 
 from product_specifications.utils import get_product_specifications
 
@@ -30,6 +31,7 @@ class ProductView(CartMixin):
             'details': specifications
         }
         return render(request, 'app/product.html', context)
+
 
 class MainPageView(CartMixin, View):
     """
@@ -64,13 +66,7 @@ class RegistrationView(CartMixin, View):
     def post(self, request):
         form = RegistrationForm(request.POST or None)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.username = form.cleaned_data['username']
-            user.set_password(form.cleaned_data['password'])
-            user.address = form.cleaned_data['address']
-            user.phone = form.cleaned_data['phone']
-            user.save()
-            create_customer(user)
+            user = register_user(form)
             user = authenticate(username=user.username, password=form.cleaned_data['password'])
 
             login(request, user)
@@ -100,9 +96,7 @@ class LoginView(CartMixin, View):
     def post(self, request):
         form = LoginForm(request.POST or None)
         if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user = authenticate(username=username, password=password)
+            user = authenticate_user(form)
             if user:
                 login(request, user)
                 return redirect('/')
@@ -150,7 +144,7 @@ class AddToCartView(CartMixin, View):
     Добавление продукта в корзину пользователя.
     """
 
-    def get(self, request, **kwargs):
+    def get(self, **kwargs):
         cart_product, created = get_cart_product(self, kwargs, add_to_cart=True)
         if created:
             self.cart.products.add(cart_product)
@@ -165,7 +159,7 @@ class RemoveFromCartView(CartMixin, View):
     Удаление продукта из корзины.
     """
 
-    def get(self, request, **kwargs):
+    def get(self, **kwargs):
         cart_product = get_cart_product(self, kwargs)
         self.cart.products.remove(cart_product)
         cart_product.delete()
@@ -175,9 +169,7 @@ class RemoveFromCartView(CartMixin, View):
 
 class ChangeProductQuantityView(CartMixin, View):
     """
-
     Изменение кол-ва продукта.
-
     """
 
     def post(self, request, **kwargs):
@@ -255,18 +247,7 @@ class MakeOrderView(CartMixin, View):
     def post(self, request):
         form = OrderForm(request.POST)
         if form.is_valid():
-            new_order = form.save(commit=False)
-            new_order.customer = self.customer
-            new_order.customer_name = form.cleaned_data['customer_name']
-            new_order.phone = form.cleaned_data['phone']
-            new_order.adress = form.cleaned_data['adress']
-            new_order.customer_last_name = form.cleaned_data['customer_last_name']
-            new_order.save()
-            self.cart.in_order = True
-            self.cart.save()
-            new_order.cart = self.cart
-            new_order.save()
-            self.customer.orders.add(new_order)
+            make_order_form_clean(form, self)
             messages.add_message(request, messages.INFO, 'Заказ создан')
             return redirect('/')
         return redirect('/order/')
