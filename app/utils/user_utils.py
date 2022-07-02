@@ -1,5 +1,3 @@
-from django.contrib.auth import authenticate
-
 from app.utils.cart_utils import create_customer
 
 

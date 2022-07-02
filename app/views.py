@@ -8,6 +8,7 @@ from django.views.generic import View
 from .services import send_email_to_host, send_notification_email, process_search_term, process_search_slug, \
     search_products
 from .forms import OrderForm, LoginForm, RegistrationForm, SendQuestionMail
+from .utils.email_utils import clean_email_form
 from .utils.order_utils import get_customer_orders, make_order_form_clean
 from .utils.product_utils import get_category, get_products_by_category, get_all_categories, get_all_products, \
     get_product
@@ -270,10 +271,10 @@ class SendEMailView(CartMixin, View):
     def post(self, request):
         form = SendQuestionMail(request.POST)
         if form.is_valid():
-            user_email = form.cleaned_data['user_mail']
-            email_text = form.cleaned_data['question']
-            user_name = form.cleaned_data['first_name']
-            user_last_name = form.cleaned_data['last_name']
-            send_notification_email(user_email, user_name, user_last_name)
-            send_email_to_host(user_email, email_text)
+            email_contents = clean_email_form(form)
+            send_notification_email(email_contents['user_email'],
+                                    email_contents['user_name'],
+                                    email_contents['user_last_name'])
+            send_email_to_host(email_contents['user_email'],
+                               email_contents['email_text'])
             return redirect('/')
