@@ -96,7 +96,8 @@ class LoginView(CartMixin, View):
     def post(self, request):
         form = LoginForm(request.POST or None)
         if form.is_valid():
-            user = authenticate_user(form)
+            user_info = authenticate_user(form)
+            user = authenticate(username=user_info[0], password=user_info[1])
             if user:
                 login(request, user)
                 return redirect('/')

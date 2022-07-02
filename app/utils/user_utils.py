@@ -9,7 +9,7 @@ def authenticate_user(form):
     """
     username = form.cleaned_data['username']
     password = form.cleaned_data['password']
-    authenticate(username=username, password=password)
+    return username, password
 
 
 def register_user(form):
