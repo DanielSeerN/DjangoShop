@@ -11,7 +11,7 @@ class OrderForm(forms.ModelForm):
 
     class Meta:
         model = Order
-        fields = ('customer_name', 'phone', 'adress', 'customer_last_name', 'order_status', 'type_of_order', 'comment',
+        fields = ('customer_name', 'customer_last_name', 'phone', 'adress', 'type_of_order', 'comment',
                   'date_of_receiveing')
 
 
@@ -61,7 +61,7 @@ class RegistrationForm(forms.ModelForm):
         confirm_password = self.cleaned_data['confirm_password']
         if password != confirm_password:
             raise forms.ValidationError('Пароли не совпадают')
-        return self.cleaned_data
+        return self.cleaned_data['password']
 
     def clean_email(self):
         email = self.cleaned_data['email']
@@ -88,3 +88,7 @@ class SendQuestionMail(forms.Form):
     user_mail = forms.EmailField(max_length=255, label='Укажите почту, на которую хотите получить ответ')
     question = forms.CharField(widget=forms.Textarea, label='Опишите свою проблему')
 
+
+class ReviewForm(forms.Form):
+    score = forms.IntegerField(max_value=5, label="Ваша оценка продукта от 1 до 5")
+    text = forms.CharField(widget=forms.Textarea, label="Опишите продукт")

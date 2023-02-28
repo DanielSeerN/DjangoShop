@@ -87,17 +87,27 @@ class Customer(models.Model):
         return f'Покупатель {self.user.first_name, self.user.last_name}'
 
 
+class Review(models.Model):
+    """
+    Модель отзыва
+    """
+    user = models.ForeignKey(User, verbose_name='Пользователь', on_delete=models.CASCADE)
+    text = models.TextField(verbose_name='Описание', null=True)
+    score = models.IntegerField(default=1)
+    product = models.ForeignKey(Product, verbose_name='Продукт', on_delete=models.CASCADE)
+
+
 class Order(models.Model):
     """
     Модель для заказа
     """
-    STATUS_NEW = 'new'
-    STATUS_IN_PROGRESS = 'in_progress'
-    STATUS_READY = 'is_ready'
-    STATUS_COMPLETED = 'completed'
+    STATUS_NEW = 'Новый'
+    STATUS_IN_PROGRESS = 'Готовится'
+    STATUS_READY = 'Готов'
+    STATUS_COMPLETED = 'Завершён'
 
-    BUYING_TYPE_SELF = 'self'
-    BUYING_TYPE_DELIVERY = 'delivery'
+    BUYING_TYPE_SELF = 'Самовывоз'
+    BUYING_TYPE_DELIVERY = 'Доставка'
 
     STATUS_CHOICES = (  # Статусы заказа
         (STATUS_NEW, 'Новый заказ'),
@@ -114,7 +124,7 @@ class Order(models.Model):
     cart = models.ForeignKey(Cart, verbose_name='Корзина', on_delete=models.CASCADE, null=True, blank=True)
     customer = models.ForeignKey(Customer, verbose_name='Покупатель', on_delete=models.CASCADE, null=True, blank=True)
     customer_name = models.CharField(max_length=255, verbose_name='Имя покупателя', null=True, blank=True)
-    customer_last_name = models.CharField(max_length=255, verbose_name='Имя покупателя', null=True, blank=True)
+    customer_last_name = models.CharField(max_length=255, verbose_name='Фамилия покупателя', null=True, blank=True)
     adress = models.CharField(max_length=255, verbose_name='Адрес', null=True, blank=True)
     phone = models.CharField(max_length=255, verbose_name='Номер телефона', null=True, blank=True)
     order_status = models.CharField(max_length=255, verbose_name='Статус заказа', choices=STATUS_CHOICES,

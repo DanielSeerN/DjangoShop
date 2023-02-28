@@ -17,7 +17,6 @@
 
 {%if specifications_existence%}
 <h6>Обновить характеристики:</h6>
-<tr>
     <form action="{%url 'update_specification'  slug=product.slug%}" method="POST">
         {%csrf_token%}
         {%for product_specification in specifications_for_product%}
@@ -27,10 +26,8 @@
         <br>
         <input type="submit" class="btn btn-outline-dark" value="Сохранить характеристики">
     </form>
-</tr>
 {%else%}
 <h6>Создать характеристики:</h6>
-<tr>
     <form action="{%url 'add_specification'  slug=product.slug%}" method="POST">
         {%csrf_token%}
         {%for product_specification in specifications_for_product%}
@@ -40,7 +37,6 @@
         <br>
         <input type="submit" class="btn btn-outline-dark" value="Сохранить характеристики">
     </form>
-</tr>
 {%endif%}
 
 {%endblock content%}

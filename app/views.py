@@ -5,12 +5,13 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.views.generic import View
 
+from .models import Product
 from .services import send_email_to_host, send_notification_email, process_search_term, process_search_slug, \
     search_products
-from .forms import OrderForm, LoginForm, RegistrationForm, SendQuestionMail
+from .forms import OrderForm, LoginForm, RegistrationForm, SendQuestionMail, ReviewForm
 from .utils.order_utils import get_customer_orders
 from .utils.product_utils import get_category, get_products_by_category, get_all_categories, get_all_products, \
-    get_product
+    get_product, get_reviews, create_review, get_review_users, get_review
 from .utils.cart_utils import refresh_cart, get_cart_product, create_customer
 from .utils.mixins import CartMixin
 
@@ -19,17 +20,52 @@ from product_specifications.utils import get_product_specifications
 
 class ProductView(CartMixin):
     """
-    Представление для отображения продукта.
+    Представление для продукта
     """
 
     def get(self, request, **kwargs):
         product = get_product(kwargs)
+        categories = get_all_categories()
         specifications = get_product_specifications(product)
+        reviews = get_reviews(product)
+        review_users = get_review_users(reviews)
+        review_form = ReviewForm(request.POST or None)
         context = {
             'product': product,
-            'details': specifications
+            'details': specifications,
+            'reviews': reviews,
+            'review_form': review_form,
+            'review_users': review_users,
         }
         return render(request, 'app/product.html', context)
+
+
+class ReviewView(View):
+    """
+    Представление для создания отзывов
+    """
+
+    def post(self, request):
+        slug = str(request.POST.get('slug_hidden'))
+        product = Product.objects.get(slug=slug)
+        form = ReviewForm(request.POST or None)
+        if request.method == "POST" and form.is_valid():
+            review = create_review(product, request.user, form.cleaned_data['text'], form.cleaned_data['score'])
+            review.save()
+        return redirect(f'/products/{slug}')
+
+
+class DeleteReview(View):
+    """
+    Представление для удаления отзыва
+    """
+
+    def get(self, request, **kwargs):
+        slug = kwargs.get('slug')
+        review = get_review(username=request.user.username)
+        review.delete()
+        return redirect(f'/products/{slug}')
+
 
 class MainPageView(CartMixin, View):
     """
@@ -137,10 +173,12 @@ class CartView(CartMixin, View):
     """
 
     def get(self, request):
+        categories = get_all_categories()
         if self.cart.final_price is None:
             self.cart.final_price = 0
         context = {
-            'cart': self.cart
+            'cart': self.cart,
+            'categories': categories
         }
         return render(request, 'app/cart.html', context)
 
@@ -175,9 +213,7 @@ class RemoveFromCartView(CartMixin, View):
 
 class ChangeProductQuantityView(CartMixin, View):
     """
-
     Изменение кол-ва продукта.
-
     """
 
     def post(self, request, **kwargs):
@@ -206,6 +242,32 @@ class OrderView(CartMixin, View):
         return render(request, 'app/order.html', context)
 
 
+class MakeOrderView(CartMixin, View):
+    """
+    Представление для добавления заказа пользователя в базу.
+    """
+
+    @transaction.atomic
+    def post(self, request):
+        form = OrderForm(request.POST)
+        if form.is_valid():
+            new_order = form.save(commit=False)
+            new_order.customer = self.customer
+            new_order.customer_name = form.cleaned_data['customer_name']
+            new_order.phone = form.cleaned_data['phone']
+            new_order.adress = form.cleaned_data['adress']
+            new_order.customer_last_name = form.cleaned_data['customer_last_name']
+            new_order.save()
+            self.cart.in_order = True
+            self.cart.save()
+            new_order.cart = self.cart
+            new_order.save()
+            self.customer.orders.add(new_order)
+            messages.add_message(request, messages.INFO, 'Заказ создан')
+            return redirect('/')
+        return redirect('/order/')
+
+
 class GetSearchText(CartMixin, View):
     """
     Обработка поискового запроса
@@ -213,8 +275,12 @@ class GetSearchText(CartMixin, View):
 
     def post(self, request):
         search_term = str(request.POST.get('search_text'))
-        search_slug = process_search_term(search_term)
-        return redirect(f'/search-results/{search_slug}')
+        if search_term == '':
+            messages.add_message(request, messages.INFO, 'Вы ввели пустой поисковой запрос!')
+            return HttpResponseRedirect('/')
+        else:
+            search_slug = process_search_term(search_term)
+            return redirect(f'/search-results/{search_slug}')
 
 
 class SearchResultPage(CartMixin, View):
@@ -244,32 +310,6 @@ class CustomerOrdersView(CartMixin, View):
             'orders': orders
         }
         return render(request, 'app/customer_orders.html', context)
-
-
-class MakeOrderView(CartMixin, View):
-    """
-    Представление для добавления заказа пользователя в базу.
-    """
-
-    @transaction.atomic
-    def post(self, request):
-        form = OrderForm(request.POST)
-        if form.is_valid():
-            new_order = form.save(commit=False)
-            new_order.customer = self.customer
-            new_order.customer_name = form.cleaned_data['customer_name']
-            new_order.phone = form.cleaned_data['phone']
-            new_order.adress = form.cleaned_data['adress']
-            new_order.customer_last_name = form.cleaned_data['customer_last_name']
-            new_order.save()
-            self.cart.in_order = True
-            self.cart.save()
-            new_order.cart = self.cart
-            new_order.save()
-            self.customer.orders.add(new_order)
-            messages.add_message(request, messages.INFO, 'Заказ создан')
-            return redirect('/')
-        return redirect('/order/')
 
 
 class SendEMailView(CartMixin, View):

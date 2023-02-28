@@ -15,7 +15,9 @@ from .views import (CartView,
                     CategoryView,
                     SearchResultPage,
                     GetSearchText,
-                    SendEMailView)
+                    SendEMailView,
+                    ReviewView,
+                    DeleteReview)
 
 urlpatterns = [
     path('', MainPageView.as_view(), name='main'),
@@ -33,5 +35,7 @@ urlpatterns = [
     path('category/<str:slug>/', CategoryView.as_view(), name='category'),
     path('search/', GetSearchText.as_view(), name='search'),
     path('search-results/<str:slug>', SearchResultPage.as_view(), name='search_page'),
-    path('mail-us/', SendEMailView.as_view(), name='send_mail')
+    path('mail-us/', SendEMailView.as_view(), name='send_mail'),
+    path('review-create/', ReviewView.as_view(), name='create_review'),
+    path('review-delete/<str:slug>', DeleteReview.as_view(), name='delete_review'),
 ]

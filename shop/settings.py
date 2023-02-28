@@ -64,6 +64,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+
+    # 'app.middleware.ExceptionMiddleware',
+    # 'app.middleware.LogoutMiddleware',
 ]
 
 ROOT_URLCONF = 'shop.urls'
@@ -79,6 +82,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'app.context_processors.extra_categories'
             ],
         },
     },

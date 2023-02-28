@@ -1,4 +1,3 @@
-import unittest
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, RequestFactory

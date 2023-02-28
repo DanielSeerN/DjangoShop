@@ -1,5 +1,5 @@
 {%extends 'app/index.html'%}
-
+{% load crispy_forms_tags%}
 {%block content%}
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb justify-content-md-center">
@@ -12,13 +12,17 @@
     <div class="col-md-4">
         <img src="{{product.image.url}}" class="img-fluid">
         <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-        <a href="{%url 'add_to_cart'  slug=product.slug%}"> <button class="btn btn-success">Добавить в корзину</button></a></div>
-                                </div>
-
+        {%if request.user.is_authenticated%}
+        <a href="{%url 'add_to_cart'  slug=product.slug%}"> <button class="btn btn-success">Добавить в корзину</button></a>
+        {%else%}
+        <a href="/login/"> <button class="btn btn-success">Добавить в корзину</button></a>
+        {%endif%}
+        </div>
+        </div>
     </div>
     <div class="col-md-8">
         <h3>{{product.title}}</h3>
-        <p>Цена: {{product.price}} ₽</p>
+        <h2>Цена: {{product.price}} ₽</h2>
         <p>Описание: {{product.description}}</p>
         {%for detail in details%}
         <p>{{detail.specification.specification}}: {{detail.value}} {%if detail.specification.unit%}{{unit}}{%endif%}</p>
@@ -30,4 +34,29 @@
         {%endif%}
     </div>
 </div>
+{%if request.user.is_authenticated%}
+    {%if request.user not in review_users%}
+    <form action="/review-create/" method="post">
+        {%csrf_token%}
+        {{review_form | crispy}}
+        <input type="hidden" name="slug_hidden" value="{{product.slug}}">
+        <input type="submit" class="btn btn-outline-dark" value="Оставить отзыв">
+    </form>
+    {%endif%}
+{%endif%}
+{%for review in reviews %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="card" style="width: 30rem;">
+          <div class="card-body">
+            <h5 class="card-title">{{review.user.username}}, {{review.score}}</h5>
+            <p class="card-text">{{review.text}}</p>
+              {%if request.user == review.user or request.user.is_superuser%}
+            <a href="/review-delete/{{product.slug}}" class="btn btn-primary">Удалить</a>
+              {%endif%}
+          </div>
+        </div>
+    </div>
+</div>
+{%endfor%}
 {%endblock content%}

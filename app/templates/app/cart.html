@@ -19,7 +19,7 @@
   {% for cart_product in cart.products.all %}
 
     <tr>
-      <th scope="row">{{cart_product.product.title}}</th>
+      <th scope="row"><h3><a href="{{cart_product.product.get_absolute_url}}">{{cart_product.product.title}}</a></h3></th>
       <td class="w-25"><img src="{{cart_product.product.image.url}}" class="img-fluid"></td>
        <td>{{cart_product.product.price}}</td>
        <td>
@@ -30,7 +30,7 @@
          <input type="submit" class="btn btn-outline-dark" value="Изменить количество">
          </form>
        </td>
-        <td>{{cart_product.final_price}}</td>
+        <td><h3>{{cart_product.final_price}}</h3></td>
        <td><a href="{%url 'remove_from_cart' slug=cart_product.product.slug%}"><button class="btn btn-outline-dark">Удалить из корзины</button></a></td>
     </tr>
   {%endfor%}
