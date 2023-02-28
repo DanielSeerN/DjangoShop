@@ -48,7 +48,7 @@
                     </ul>
                      {%if request.user.is_authenticated%}
                         <div class="dropdown">
-                          <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                          <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Личный кабинет
                           </a>
                           <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
@@ -56,6 +56,7 @@
                             <li><a class="dropdown-item" href="{%url 'orders'%}">Мои заказы</a></li>
                           </ul>
                         </div>
+<<<<<<< HEAD
                     {%else%}
                         <form class="d-flex" action="{%url 'login'%}">
                         <button class="btn btn-outline-dark" type="submit" >
@@ -68,6 +69,21 @@
                         </form>
                     {%endif%}
                     <form class="d-flex" action="{%url 'cart'%}">
+=======
+                        {%else%}
+                        <div class="dropdown">
+                            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Личный кабинет
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                <li><a href="{%url 'login'%}">Войти</a></li>
+                                <li><a href="{%url 'registration'%}">Зарегистрироваться</a></li>
+                            </ul>
+                        </div>
+                        {%endif%}
+                    </ul>
+                        <form class="d-flex" action="{%url 'cart'%}">
+>>>>>>> 1daa6aece23b5684f5be666f6e9f8fa7053afb78
                         <button class="btn btn-outline-dark" type="submit" >
                             <i class="bi-cart-fill me-1"></i>
                             Корзина

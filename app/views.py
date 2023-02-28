@@ -8,12 +8,22 @@ from django.views.generic import View
 from .models import Product
 from .services import send_email_to_host, send_notification_email, process_search_term, process_search_slug, \
     search_products
+<<<<<<< HEAD
 from .forms import OrderForm, LoginForm, RegistrationForm, SendQuestionMail, ReviewForm
 from .utils.order_utils import get_customer_orders
 from .utils.product_utils import get_category, get_products_by_category, get_all_categories, get_all_products, \
     get_product, get_reviews, create_review, get_review_users, get_review
 from .utils.cart_utils import refresh_cart, get_cart_product, create_customer
+=======
+from .forms import OrderForm, LoginForm, RegistrationForm, SendQuestionMail
+from .utils.email_utils import clean_email_form
+from .utils.order_utils import get_customer_orders, make_order_form_clean
+from .utils.product_utils import get_category, get_products_by_category, get_all_categories, get_all_products, \
+    get_product
+from .utils.cart_utils import refresh_cart, get_cart_product
+>>>>>>> 1daa6aece23b5684f5be666f6e9f8fa7053afb78
 from .utils.mixins import CartMixin
+from .utils.user_utils import authenticate_user, register_user
 
 from product_specifications.utils import get_product_specifications
 
@@ -40,6 +50,7 @@ class ProductView(CartMixin):
         return render(request, 'app/product.html', context)
 
 
+<<<<<<< HEAD
 class ReviewView(View):
     """
     Представление для создания отзывов
@@ -67,6 +78,8 @@ class DeleteReview(View):
         return redirect(f'/products/{slug}')
 
 
+=======
+>>>>>>> 1daa6aece23b5684f5be666f6e9f8fa7053afb78
 class MainPageView(CartMixin, View):
     """
     Главная страница.
@@ -100,13 +113,7 @@ class RegistrationView(CartMixin, View):
     def post(self, request):
         form = RegistrationForm(request.POST or None)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.username = form.cleaned_data['username']
-            user.set_password(form.cleaned_data['password'])
-            user.address = form.cleaned_data['address']
-            user.phone = form.cleaned_data['phone']
-            user.save()
-            create_customer(user)
+            user = register_user(form)
             user = authenticate(username=user.username, password=form.cleaned_data['password'])
 
             login(request, user)
@@ -136,9 +143,8 @@ class LoginView(CartMixin, View):
     def post(self, request):
         form = LoginForm(request.POST or None)
         if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user = authenticate(username=username, password=password)
+            user_info = authenticate_user(form)
+            user = authenticate(username=user_info[0], password=user_info[1])
             if user:
                 login(request, user)
                 return redirect('/')
@@ -188,7 +194,7 @@ class AddToCartView(CartMixin, View):
     Добавление продукта в корзину пользователя.
     """
 
-    def get(self, request, **kwargs):
+    def get(self, **kwargs):
         cart_product, created = get_cart_product(self, kwargs, add_to_cart=True)
         if created:
             self.cart.products.add(cart_product)
@@ -203,7 +209,7 @@ class RemoveFromCartView(CartMixin, View):
     Удаление продукта из корзины.
     """
 
-    def get(self, request, **kwargs):
+    def get(self, **kwargs):
         cart_product = get_cart_product(self, kwargs)
         self.cart.products.remove(cart_product)
         cart_product.delete()
@@ -312,6 +318,24 @@ class CustomerOrdersView(CartMixin, View):
         return render(request, 'app/customer_orders.html', context)
 
 
+<<<<<<< HEAD
+=======
+class MakeOrderView(CartMixin, View):
+    """
+    Представление для добавления заказа пользователя в базу.
+    """
+
+    @transaction.atomic
+    def post(self, request):
+        form = OrderForm(request.POST)
+        if form.is_valid():
+            make_order_form_clean(form, self)
+            messages.add_message(request, messages.INFO, 'Заказ создан')
+            return redirect('/')
+        return redirect('/order/')
+
+
+>>>>>>> 1daa6aece23b5684f5be666f6e9f8fa7053afb78
 class SendEMailView(CartMixin, View):
     """
     Отправка писем с фидбеком или жалобами
@@ -328,10 +352,10 @@ class SendEMailView(CartMixin, View):
     def post(self, request):
         form = SendQuestionMail(request.POST)
         if form.is_valid():
-            user_email = form.cleaned_data['user_mail']
-            email_text = form.cleaned_data['question']
-            user_name = form.cleaned_data['first_name']
-            user_last_name = form.cleaned_data['last_name']
-            send_notification_email(user_email, user_name, user_last_name)
-            send_email_to_host(user_email, email_text)
+            email_contents = clean_email_form(form)
+            send_notification_email(email_contents['user_email'],
+                                    email_contents['user_name'],
+                                    email_contents['user_last_name'])
+            send_email_to_host(email_contents['user_email'],
+                               email_contents['email_text'])
             return redirect('/')
